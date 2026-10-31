@@ -268,10 +268,13 @@ function parseClipInput(text) {
   return m ? parseInt(m[1], 10) : null;
 }
 
-/** The Swagit player page, or the moment `sec` seconds in when given. */
+/** The Swagit player page, or the moment `sec` seconds in when given.
+ *  The page reads the start time from the URL hash (`#<seconds>`) once the
+ *  video starts; its own `/play/<id>/<sec>` links are JavaScript-only and
+ *  return 404 when opened directly. */
 function playerUrl(clipId, sec) {
-  if (sec == null || !Number.isFinite(Number(sec))) return `${SITE}/videos/${clipId}`;
-  return `${SITE}/play/${clipId}/${Math.max(0, Math.floor(Number(sec)))}`;
+  const at = sec == null || !Number.isFinite(Number(sec)) ? 0 : Math.max(0, Math.floor(Number(sec)));
+  return at ? `${SITE}/videos/${clipId}#${at}` : `${SITE}/videos/${clipId}`;
 }
 
 function embedUrl(clipId) {

@@ -463,8 +463,8 @@ ipcMain.handle("transcript:read", (_e, id) => {
       body,
       clipId,
       playerUrl: clipId ? sources.playerUrl(clipId) : null,
-      // Per-timestamp links are playBase + "/" + seconds.
-      playBase: clipId ? sources.playerUrl(clipId, 1).replace(/\/1$/, "") : null,
+      // Per-timestamp links are playBase + "#" + seconds.
+      playBase: clipId ? sources.playerUrl(clipId) : null,
     };
   } catch (e) {
     return { ok: false, error: `The transcript could not be read (${e.message || e}).` };
@@ -632,7 +632,7 @@ ipcMain.handle("agenda:read", async (_e, id) => {
       index: Array.isArray(clip.index) ? clip.index : [],
       clipId: clip.clipId,
       playerUrl: clip.playerUrl || sources.playerUrl(clip.clipId),
-      playBase: sources.playerUrl(clip.clipId, 1).replace(/\/1$/, ""),
+      playBase: sources.playerUrl(clip.clipId),
     };
   } catch (e) {
     return failure(e);

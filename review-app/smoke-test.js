@@ -185,7 +185,8 @@ async function main() {
   }
   assert.equal(sources.parseClipInput("https://destinyhosted.com/agenda_publish.cfm?id=67682"), null);
   assert.equal(sources.playerUrl(339060), "https://orovalleyaz.new.swagit.com/videos/339060");
-  assert.equal(sources.playerUrl(339060, 131.9), "https://orovalleyaz.new.swagit.com/play/339060/131");
+  assert.equal(sources.playerUrl(339060, 131.9), "https://orovalleyaz.new.swagit.com/videos/339060#131");
+  assert.equal(sources.playerUrl(339060, 0), "https://orovalleyaz.new.swagit.com/videos/339060");
   assert.equal(sources.embedUrl(339060), "https://orovalleyaz.new.swagit.com/videos/339060/embed");
   assert.deepEqual(sources.MEDIA_HEADERS, { "User-Agent": sources.BROWSER_UA }, "no Referer needed");
   assert.equal(await sources.fetchCaptions(339060), "", "Swagit has no captions");

@@ -41,13 +41,14 @@ export function formatSeconds(sec) {
 /**
  * The Swagit page that plays a video from a given second:
  *   https://orovalleyaz.new.swagit.com/videos/<id>            (from the start)
- *   https://orovalleyaz.new.swagit.com/play/<id>/<sec>        (from `sec`)
- * `playBase` (from the main process) overrides the built-in host when given.
+ *   https://orovalleyaz.new.swagit.com/videos/<id>#<sec>      (from `sec`; the page seeks to the hash)
+ * `playBase` (from the main process, the /videos/<id> URL) overrides the built-in host when given.
  */
 export function playUrlFor(clipId, sec = 0, playBase = null) {
   if (!clipId) return null;
   const at = Math.max(0, Math.floor(Number(sec) || 0));
   if (!at) return `${SWAGIT_SITE}/videos/${clipId}`;
-  const base = playBase ? String(playBase).replace(/\/+$/, "") : `${SWAGIT_SITE}/play/${clipId}`;
-  return `${base}/${at}`;
+  // The Swagit page seeks to the number in the URL hash once the video starts.
+  const base = playBase ? String(playBase).replace(/#.*$/, "").replace(/\/+$/, "") : `${SWAGIT_SITE}/videos/${clipId}`;
+  return `${base}#${at}`;
 }
