@@ -73,7 +73,7 @@ function createWindow() {
     minHeight: 620,
     title: "Oro Valley Council Dashboard",
     autoHideMenuBar: true,
-    backgroundColor: "#f6f1e7",
+    backgroundColor: "#f4f6f8",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,

@@ -1,19 +1,19 @@
 /* Town of Oro Valley Town Council meeting summaries widget.
-   Town brand: blue accent, navy headings, charcoal text, cool grey surfaces.
-   Text colors are checked against white and the grey surface for WCAG AA (4.5:1). */
+   Colors, type and shapes follow the Oro Valley Design System (taken from orovalleyaz.gov),
+   so the widget reads as part of the Town page around it. Text pairs meet WCAG AA (4.5:1). */
 :root {
-  --ecw-bg: #ffffff;
-  --ecw-surface: #f4f6f8;
-  --ecw-ink: #3d3b38;
-  --ecw-ink-soft: #5f5d59;
-  --ecw-line: #dfe5eb;
-  --ecw-accent: #236298;
-  --ecw-accent-dark: #002d74;
-  --ecw-accent-soft: #e9f1f8;
-  --ecw-copper: #236298;
-  --ecw-copper-ink: #236298;
-  --ecw-gold: #f7b917;
-  --ecw-radius: 8px;
+  --surface: #ffffff;
+  --surface-muted: #f6f6f6;
+  --ink: #002927;
+  --charcoal: #3d3b38;
+  --blue: #236298;
+  --blue-hover: #3271a7;
+  --visited: #ad488b;
+  --gold: #f7b917;
+  --line-strong: #cbcbcb;
+  --radius-button: 4px;
+  --radius-card: 8px;
+  --font-sans: "Source Sans Pro", "Source Sans 3", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
 
 * {
@@ -23,9 +23,9 @@
 html,
 body {
   margin: 0;
-  background: var(--ecw-bg);
-  color: var(--ecw-ink);
-  font-family: "Source Sans Pro", "Source Sans 3", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.5;
 }
@@ -36,18 +36,24 @@ body {
   padding: 16px;
 }
 
+/* Links as on the Town site: charcoal and underlined, then blue without the underline */
 .ecw a {
-  color: var(--ecw-accent);
+  color: var(--charcoal);
+  text-decoration: underline;
 }
 
-.ecw a:hover {
-  color: var(--ecw-accent-dark);
-  text-decoration-color: var(--ecw-gold);
-  text-decoration-thickness: 2px;
+.ecw a:visited {
+  color: var(--visited);
+}
+
+.ecw a:hover,
+.ecw a:focus-visible {
+  color: var(--blue-hover);
+  text-decoration: none;
 }
 
 .ecw :focus-visible {
-  outline: 2px solid var(--ecw-accent);
+  outline: 2px solid var(--blue);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -63,16 +69,14 @@ body {
 
 .ecw-status {
   margin: 4px 0 20px;
-  color: var(--ecw-ink-soft);
+  color: var(--charcoal);
 }
 
-/* Latest meeting */
+/* Latest meeting: a flat grey box, like the side boxes on Town pages */
 .ecw-latest {
-  padding: 18px 20px;
-  background: var(--ecw-surface);
-  border: 1px solid var(--ecw-line);
-  border-left: 3px solid var(--ecw-accent);
-  border-radius: var(--ecw-radius);
+  padding: 20px 25px;
+  background: var(--surface-muted);
+  border-radius: var(--radius-card);
 }
 
 .ecw-eyebrow {
@@ -81,19 +85,20 @@ body {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ecw-copper-ink);
+  color: var(--charcoal);
 }
 
 .ecw-date {
   margin: 4px 0 0;
-  font-size: 1.3rem;
-  line-height: 1.25;
-  color: var(--ecw-accent-dark);
+  font-size: 1.25rem;
+  line-height: 1.5;
+  font-weight: 700;
+  color: var(--charcoal);
 }
 
 .ecw-meta {
   margin: 2px 0 10px;
-  color: var(--ecw-ink-soft);
+  color: var(--charcoal);
   font-size: 0.92rem;
 }
 
@@ -119,8 +124,12 @@ body {
 
 .ecw-full > summary {
   display: inline-block;
-  color: var(--ecw-accent);
+  color: var(--blue);
   font-weight: 600;
+}
+
+.ecw-full > summary:hover {
+  text-decoration: underline;
 }
 
 .ecw-full > summary::before,
@@ -143,7 +152,7 @@ body {
 .ecw-full .ecw-md {
   margin-top: 8px;
   padding-top: 4px;
-  border-top: 1px solid var(--ecw-line);
+  border-top: 1px solid var(--line-strong);
 }
 
 .ecw-md h3,
@@ -152,7 +161,8 @@ body {
 .ecw-md h6 {
   margin: 14px 0 6px;
   font-size: 1rem;
-  color: var(--ecw-accent-dark);
+  font-weight: 700;
+  color: var(--charcoal);
 }
 
 .ecw-md p {
@@ -178,22 +188,43 @@ body {
   text-underline-offset: 2px;
 }
 
+/* The latest meeting's video link is the call to action: a gold button, as on Town pages */
+.ecw-latest .ecw-actions .ecw-link {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 15px 20px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--charcoal);
+  background: var(--gold);
+  border-radius: var(--radius-button);
+  text-decoration: none;
+}
+
+.ecw-latest .ecw-actions .ecw-link:hover,
+.ecw-latest .ecw-actions .ecw-link:focus-visible {
+  color: var(--charcoal);
+  text-decoration: underline;
+}
+
 /* Earlier meetings */
 .ecw-section-title {
   margin: 22px 0 6px;
-  font-size: 1.05rem;
-  color: var(--ecw-accent-dark);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--charcoal);
 }
 
 .ecw-list {
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--ecw-line);
+  border-top: 1px solid var(--line-strong);
 }
 
 .ecw-list > li {
-  border-bottom: 1px solid var(--ecw-line);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .ecw-row > summary {
@@ -202,19 +233,16 @@ body {
   align-items: baseline;
   gap: 4px 12px;
   padding: 12px 4px;
+  color: var(--charcoal);
 }
 
 .ecw-row > summary:hover {
-  background: var(--ecw-surface);
+  background: var(--surface-muted);
 }
 
 .ecw-row-date {
   font-weight: 600;
   min-width: 8.5em;
-}
-
-.ecw-row-title {
-  color: var(--ecw-ink-soft);
 }
 
 .ecw-row-body {
@@ -225,8 +253,8 @@ body {
 .ecw-footer {
   margin-top: 20px;
   padding-top: 12px;
-  border-top: 1px solid var(--ecw-line);
-  color: var(--ecw-ink-soft);
+  border-top: 1px solid var(--line-strong);
+  color: var(--charcoal);
   font-size: 0.85rem;
 }
 
@@ -239,9 +267,16 @@ body {
     padding: 12px;
   }
   .ecw-latest {
-    padding: 14px;
+    padding: 15px 20px;
   }
   .ecw-date {
     font-size: 1.15rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecw-full > summary::before,
+  .ecw-row > summary::before {
+    transition: none;
   }
 }
