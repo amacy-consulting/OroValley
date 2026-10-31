@@ -43,4 +43,44 @@ contextBridge.exposeInMainWorld("review", {
     ipcRenderer.on("progress", listener);
     return () => ipcRenderer.removeListener("progress", listener);
   },
+
+  // Search across every saved transcript, summary and minutes draft
+  /** options: { kinds, bodies, from, to, sort, limit, snippetLimit } -> { ok, result } */
+  search: (text, options) => ipcRenderer.invoke("search:query", text, options),
+  /** -> { ok, stats: { meetings, transcripts, minutesDrafts, summaries, turns, earliest, latest, hours } } */
+  searchStats: () => ipcRenderer.invoke("search:stats"),
+  /** -> { ok, speakers: [{ speaker, turns, seconds, words }] } */
+  speakers: (id) => ipcRenderer.invoke("search:speakers", id),
+
+  // Watched topics
+  listTopics: () => ipcRenderer.invoke("topics:list"),
+  /** fields: { name, terms, color } */
+  addTopic: (fields) => ipcRenderer.invoke("topics:add", fields),
+  updateTopic: (id, fields) => ipcRenderer.invoke("topics:update", id, fields),
+  removeTopic: (id) => ipcRenderer.invoke("topics:remove", id),
+  topicsOverview: () => ipcRenderer.invoke("topics:overview"),
+  /** range: { from, to } */
+  topicStats: (id, range) => ipcRenderer.invoke("topics:stats", id, range),
+  topicsForMeeting: (id) => ipcRenderer.invoke("topics:forMeeting", id),
+
+  // Ask Claude
+  /** scope: { meetingIds, bodies, from, to } -> { ok, id, askedAt, answer, citations, passagesCount } */
+  ask: (question, scope) => ipcRenderer.invoke("ask:question", question, scope),
+  askHistory: () => ipcRenderer.invoke("ask:history"),
+  removeAsk: (id) => ipcRenderer.invoke("ask:remove", id),
+
+  // Bulk work
+  /** items: [{ meetingId, kind: "transcript" | "summary" | "minutes" }] -> { ok, added, skipped, status } */
+  enqueueJobs: (items) => ipcRenderer.invoke("jobs:enqueue", items),
+  jobsStatus: () => ipcRenderer.invoke("jobs:status"),
+  cancelAllJobs: () => ipcRenderer.invoke("jobs:cancelAll"),
+  cancelJob: (meetingId, kind) => ipcRenderer.invoke("jobs:cancelOne", meetingId, kind),
+  /** options: { kinds, monthsBack, needs } -> { ok, candidates, rate, assumedMinutes } */
+  candidates: (options) => ipcRenderer.invoke("meetings:candidates", options),
+  /** Called with the queue status ({ running, pending, done }) on every change. */
+  onJobs: (callback) => {
+    const listener = (_e, status) => callback(status);
+    ipcRenderer.on("jobs", listener);
+    return () => ipcRenderer.removeListener("jobs", listener);
+  },
 });

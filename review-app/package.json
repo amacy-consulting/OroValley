@@ -11,7 +11,7 @@
     "build:renderer": "vite build",
     "start": "vite build && electron .",
     "dist": "vite build && electron-builder --win",
-    "test": "node smoke-test.js",
+    "test": "node smoke-test.js && node minutes-test.js && node search-test.js",
     "e2e": "node e2e-test.js"
   },
   "build": {

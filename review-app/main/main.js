@@ -14,16 +14,30 @@ const exporter = require("./engine/export");
 const { ReviewStore } = require("./engine/review");
 const { FriendlyError, CancelledError, isAbortError } = require("./engine/errors");
 const { loadSettings, saveSettings, publicSettings } = require("./engine/settings");
+const { Corpus } = require("./engine/corpus");
+const searchEngine = require("./engine/search");
+const { TopicStore, topicStats, topicsForMeeting, topicsOverview } = require("./engine/topics");
+const { askQuestion } = require("./engine/ask");
+const { JobQueue } = require("./engine/jobs");
+const { loadCouncilRoster } = require("./engine/roster");
 
 let mainWindow = null;
 let store = null;
+let corpus = null; // every saved transcript, summary and minutes draft, for search, topics and questions
+let topics = null; // watched keywords (TopicStore)
+let jobs = null; // the bulk queue (JobQueue)
 let busy = false;
-let currentJob = null; // { controller, id, kind } while a summary, transcript or minutes job runs
+let queueHoldsBusy = false; // true while the bulk queue is the long-running thing
+let currentJob = null; // { controller, id, kind } while a summary, transcript, minutes or ask job runs
 let listingCache = null; // { at, meetings }
 const clipCache = new Map(); // meeting id -> resolved Swagit clip, for the session
 const publishedMinutesCache = new Map(); // minutesSeq -> text
 const LISTING_TTL_MS = 10 * 60 * 1000;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const ASKS_KEEP = 50; // questions and answers remembered in userData/asks.json
+const COUNCIL_KINDS = ["council", "special", "work-session"];
+const DEEPGRAM_PER_MINUTE = 0.0043; // Nova-3, per the Settings screen
+const UNKNOWN_DURATION_MIN = 150; // used for the estimate when Swagit has not reported a length
 
 /** Bundled files (keyterms.txt, sample minutes): next to app.asar when packaged, review-app/resources in development. */
 function resourcesDir() {
@@ -33,7 +47,10 @@ function resourcesDir() {
 /** Transcripts and draft minutes go to Documents\Oro Valley Minutes, so a
  *  meeting is transcribed (and paid for) once and the Clerk's files are easy to find. */
 function outputDir() {
-  return path.join(app.getPath("documents"), "Oro Valley Minutes");
+  // OV_DOCUMENTS points tests and screenshots at a scratch Documents folder.
+  return process.env.OV_DOCUMENTS
+    ? path.join(process.env.OV_DOCUMENTS, "Oro Valley Minutes")
+    : path.join(app.getPath("documents"), "Oro Valley Minutes");
 }
 
 function tempDir() {
@@ -83,6 +100,34 @@ function createWindow() {
       // OV_SCREENSHOT_CLICK="<css selector>|<css selector>…" clicks those in order first
       // (for example the first meeting, then its Transcript tab).
       for (const selector of (process.env.OV_SCREENSHOT_CLICK || "").split("|").filter(Boolean)) {
+        await mainWindow.webContents.executeJavaScript(
+          `[...document.querySelectorAll(${JSON.stringify(selector.replace(/:text\(.*\)$/, ""))})]` +
+            `.find((el) => ${JSON.stringify((selector.match(/:text\((.*)\)$/) || [])[1] || "")} === "" || el.textContent.trim() === ${JSON.stringify((selector.match(/:text\((.*)\)$/) || [])[1] || "")})?.click()`
+        );
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+      // OV_SCREENSHOT_TYPE="<css selector>=<text>" then types into that field the way a
+      // person would (React sees the change) and presses Enter.
+      const typeStep = process.env.OV_SCREENSHOT_TYPE || "";
+      const eq = typeStep.indexOf("=");
+      if (eq > 0) {
+        await mainWindow.webContents.executeJavaScript(
+          `(() => {
+            const el = document.querySelector(${JSON.stringify(typeStep.slice(0, eq))});
+            if (!el) return false;
+            const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+            const setter = Object.getOwnPropertyDescriptor(proto, "value").set;
+            el.focus();
+            setter.call(el, ${JSON.stringify(typeStep.slice(eq + 1))});
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+            el.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", bubbles: true }));
+            return true;
+          })()`
+        );
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+      // OV_SCREENSHOT_AFTER="<css selector>|…" clicks more things after typing (for example a result).
+      for (const selector of (process.env.OV_SCREENSHOT_AFTER || "").split("|").filter(Boolean)) {
         await mainWindow.webContents.executeJavaScript(
           `[...document.querySelectorAll(${JSON.stringify(selector.replace(/:text\(.*\)$/, ""))})]` +
             `.find((el) => ${JSON.stringify((selector.match(/:text\((.*)\)$/) || [])[1] || "")} === "" || el.textContent.trim() === ${JSON.stringify((selector.match(/:text\((.*)\)$/) || [])[1] || "")})?.click()`
@@ -148,6 +193,7 @@ function snapshot() {
     })),
     settings: publicSettings(),
     job: currentJob ? { id: currentJob.id, kind: currentJob.kind } : null,
+    jobs: jobs ? jobs.status() : { running: null, pending: [], done: [] },
   };
 }
 
@@ -268,30 +314,86 @@ ipcMain.handle("meeting:save", (_e, id, fields) => edit(() => store.update(id, f
 ipcMain.handle("meeting:status", (_e, id, status) => edit(() => store.setStatus(id, status)));
 ipcMain.handle("meeting:resolve", (_e, id, choice) => edit(() => store.resolveConflict(id, choice)));
 
+/* ---- The three long jobs, shared by the single-meeting buttons and the bulk queue ---- */
+
+/** Transcribe one meeting: Swagit video -> Deepgram -> saved file. */
+async function transcribeMeeting(meeting, { retranscribe = false, signal, report }) {
+  if (!meeting.clipId) throw new FriendlyError("This meeting has no Swagit video to transcribe.");
+  report("Looking up the video on Swagit…");
+  const clip = withDraft(await clipFor(meeting, { signal }), meeting.draft);
+  const result = await obtainTranscript({
+    clip,
+    retranscribe: Boolean(retranscribe),
+    ...keysAndDirs(),
+    report: (text) => report(text),
+    signal,
+  });
+  return {
+    transcriptReused: Boolean(result.reused),
+    transcriptSource: result.source || null,
+    name: result.txtPath ? path.basename(result.txtPath) : null,
+  };
+}
+
+/** Write one meeting's summary: Swagit video -> transcript -> Claude. `draft` is the reviewer's current text. */
+async function summarizeMeeting(meeting, { draft, retranscribe = false, signal, report }) {
+  if (!meeting.clipId) throw new FriendlyError("This meeting has no Swagit video to summarize.");
+  report("Looking up the video on Swagit…");
+  const fields = draft && typeof draft === "object" ? draft : meeting.draft;
+  const clip = withDraft(await clipFor(meeting, { signal }), fields);
+  const result = await summarizeClip({
+    clip,
+    draft: fields,
+    retranscribe: Boolean(retranscribe),
+    ...keysAndDirs(),
+    onProgress: (p) => report(p.text),
+    signal,
+  });
+  return {
+    suggestion: { overview: result.overview, details: result.details },
+    transcriptReused: result.transcriptReused,
+    agendaUsed: result.agendaUsed,
+  };
+}
+
+/** Draft one meeting's minutes: transcript + agenda + the sample minutes -> Claude -> saved markdown. */
+async function draftMeetingMinutes(meeting, { currentMarkdown, retranscribe = false, signal, report }) {
+  if (!meeting.clipId) throw new FriendlyError("This meeting has no Swagit video to draft minutes from.");
+  report("Looking up the video on Swagit…");
+  const clip = withDraft(await clipFor(meeting, { signal }), meeting.draft);
+  // `draft` is the Clerk's current Markdown (a redraft keeps their edits), or null for a first draft.
+  const current = typeof currentMarkdown === "string" ? currentMarkdown.trim() : "";
+  const result = await draftMinutes({
+    clip,
+    draft: current || null,
+    retranscribe: Boolean(retranscribe),
+    ...keysAndDirs(),
+    onProgress: (p) => report(typeof p === "string" ? p : p && p.text),
+    signal,
+  });
+  return {
+    minutes: result.minutes,
+    notes: Array.isArray(result.notes) ? result.notes : [],
+    transcriptReused: Boolean(result.transcriptReused),
+    agendaUsed: Boolean(result.agendaUsed),
+    sampleUsed: Boolean(result.sampleUsed),
+    savedPath: result.savedPath || null,
+  };
+}
+
 /** Write (or rewrite) one meeting's summary: Swagit video -> transcript -> Claude. */
 ipcMain.handle("meeting:summarize", (_e, id, draft, options) =>
   run(async () => {
     const meeting = meetingFor(id);
-    if (!meeting.clipId) throw new FriendlyError("This meeting has no Swagit video to summarize.");
     return withJob(id, "summary", async (signal) => {
-      progress("Looking up the video on Swagit…");
-      const fields = draft && typeof draft === "object" ? draft : meeting.draft;
-      const clip = withDraft(await clipFor(meeting, { signal }), fields);
-      const result = await summarizeClip({
-        clip,
-        draft: fields,
+      const result = await summarizeMeeting(meeting, {
+        draft,
         retranscribe: Boolean(options && options.retranscribe),
-        ...keysAndDirs(),
-        onProgress: (p) => progress(p.text),
         signal,
+        report: progress,
       });
       currentJob = null;
-      return {
-        suggestion: { overview: result.overview, details: result.details },
-        transcriptReused: result.transcriptReused,
-        agendaUsed: result.agendaUsed,
-        state: snapshot(),
-      };
+      return { ...result, state: snapshot() };
     });
   })
 );
@@ -300,24 +402,14 @@ ipcMain.handle("meeting:summarize", (_e, id, draft, options) =>
 ipcMain.handle("transcript:create", (_e, id, options) =>
   run(async () => {
     const meeting = meetingFor(id);
-    if (!meeting.clipId) throw new FriendlyError("This meeting has no Swagit video to transcribe.");
     return withJob(id, "transcript", async (signal) => {
-      progress("Looking up the video on Swagit…");
-      const clip = withDraft(await clipFor(meeting, { signal }), meeting.draft);
-      const result = await obtainTranscript({
-        clip,
+      const result = await transcribeMeeting(meeting, {
         retranscribe: Boolean(options && options.retranscribe),
-        ...keysAndDirs(),
-        report: (text) => progress(text),
         signal,
+        report: progress,
       });
       currentJob = null;
-      return {
-        transcriptReused: Boolean(result.reused),
-        transcriptSource: result.source || null,
-        name: result.txtPath ? path.basename(result.txtPath) : null,
-        state: snapshot(),
-      };
+      return { ...result, state: snapshot() };
     });
   })
 );
@@ -326,30 +418,15 @@ ipcMain.handle("transcript:create", (_e, id, options) =>
 ipcMain.handle("minutes:draft", (_e, id, currentMarkdown, options) =>
   run(async () => {
     const meeting = meetingFor(id);
-    if (!meeting.clipId) throw new FriendlyError("This meeting has no Swagit video to draft minutes from.");
     return withJob(id, "minutes", async (signal) => {
-      progress("Looking up the video on Swagit…");
-      const clip = withDraft(await clipFor(meeting, { signal }), meeting.draft);
-      // `draft` is the Clerk's current Markdown (a redraft keeps their edits), or null for a first draft.
-      const current = typeof currentMarkdown === "string" ? currentMarkdown.trim() : "";
-      const result = await draftMinutes({
-        clip,
-        draft: current || null,
+      const result = await draftMeetingMinutes(meeting, {
+        currentMarkdown,
         retranscribe: Boolean(options && options.retranscribe),
-        ...keysAndDirs(),
-        onProgress: (p) => progress(typeof p === "string" ? p : p && p.text),
         signal,
+        report: progress,
       });
       currentJob = null;
-      return {
-        minutes: result.minutes,
-        notes: Array.isArray(result.notes) ? result.notes : [],
-        transcriptReused: Boolean(result.transcriptReused),
-        agendaUsed: Boolean(result.agendaUsed),
-        sampleUsed: Boolean(result.sampleUsed),
-        savedPath: result.savedPath || null,
-        state: snapshot(),
-      };
+      return { ...result, state: snapshot() };
     });
   })
 );
@@ -588,11 +665,240 @@ ipcMain.handle("open:external", (_e, url) => {
   if (/^https:\/\//i.test(String(url))) shell.openExternal(url);
 });
 
+/* ---- Search, topics, questions: the analysis side ---------------------------------- */
+
+/** Bring the corpus up to date with the files on disk and the drafts in the review state. */
+function freshCorpus() {
+  corpus.refresh(store.view().meetings);
+  return corpus;
+}
+
+function analysis(work) {
+  try {
+    return { ok: true, ...work() };
+  } catch (e) {
+    return failure(e);
+  }
+}
+
+ipcMain.handle("search:query", (_e, text, options) =>
+  analysis(() => ({ result: searchEngine.search(freshCorpus(), String(text || ""), options || {}) }))
+);
+
+ipcMain.handle("search:stats", () => analysis(() => ({ stats: freshCorpus().stats() })));
+
+ipcMain.handle("search:speakers", (_e, id) => analysis(() => ({ speakers: searchEngine.speakerStats(freshCorpus(), id) })));
+
+ipcMain.handle("topics:list", () => analysis(() => ({ topics: topics.list() })));
+ipcMain.handle("topics:add", (_e, fields) => analysis(() => ({ topic: topics.add(fields || {}), topics: topics.list() })));
+ipcMain.handle("topics:update", (_e, id, fields) =>
+  analysis(() => ({ topic: topics.update(id, fields || {}), topics: topics.list() }))
+);
+ipcMain.handle("topics:remove", (_e, id) => analysis(() => ({ removed: topics.remove(id), topics: topics.list() })));
+ipcMain.handle("topics:overview", () => analysis(() => ({ overview: topicsOverview(freshCorpus(), topics.list()) })));
+ipcMain.handle("topics:stats", (_e, id, range) =>
+  analysis(() => {
+    const topic = topics.list().find((t) => t.id === id);
+    if (!topic) throw new FriendlyError("That topic no longer exists.");
+    return { stats: topicStats(freshCorpus(), topic, range || {}) };
+  })
+);
+ipcMain.handle("topics:forMeeting", (_e, id) =>
+  analysis(() => ({ topics: topicsForMeeting(freshCorpus(), topics.list(), id) }))
+);
+
+/** userData/asks.json: the last ASKS_KEEP questions with their answers and sources. */
+function asksFile() {
+  return path.join(app.getPath("userData"), "asks.json");
+}
+
+function readAsks() {
+  try {
+    const data = JSON.parse(fs.readFileSync(asksFile(), "utf-8"));
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeAsks(list) {
+  const file = asksFile();
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const tmp = `${file}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(list.slice(0, ASKS_KEEP), null, 2), "utf-8");
+  fs.renameSync(tmp, file);
+}
+
+/** Ask Claude a question across the saved transcripts and summaries. Cancellable like the other long jobs. */
+ipcMain.handle("ask:question", (_e, question, scope) =>
+  run(async () => {
+    const text = String(question || "").trim();
+    if (!text) throw new FriendlyError("Type a question first.");
+    return withJob(null, "ask", async (signal) => {
+      progress("Finding the passages that bear on the question…");
+      const { keys } = keysAndDirs();
+      let roster = null;
+      try {
+        roster = await loadCouncilRoster();
+      } catch {
+        roster = null;
+      }
+      const result = await askQuestion(
+        { question: text, corpus: freshCorpus(), scope: scope && typeof scope === "object" ? scope : {}, roster },
+        { apiKey: keys.anthropic, onProgress: (p) => progress(typeof p === "string" ? p : (p && p.text) || ""), signal }
+      );
+      currentJob = null;
+      const entry = {
+        id: `ask-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+        askedAt: new Date().toISOString(),
+        question: text,
+        scope: scope || {},
+        answer: result.answer,
+        citations: Array.isArray(result.citations) ? result.citations : [],
+      };
+      writeAsks([entry, ...readAsks()]);
+      return {
+        id: entry.id,
+        askedAt: entry.askedAt,
+        answer: entry.answer,
+        citations: entry.citations,
+        passagesCount: Array.isArray(result.passages) ? result.passages.length : 0,
+        model: result.model || null,
+      };
+    });
+  })
+);
+
+ipcMain.handle("ask:history", () => ({ ok: true, asks: readAsks() }));
+
+ipcMain.handle("ask:remove", (_e, id) => {
+  writeAsks(readAsks().filter((a) => a.id !== id));
+  return { ok: true, asks: readAsks() };
+});
+
+/* ---- Bulk work: the job queue ------------------------------------------------------ */
+
+function pushJobs() {
+  if (mainWindow && !mainWindow.isDestroyed() && jobs) mainWindow.webContents.send("jobs", jobs.status());
+}
+
+/** Hold the app's busy flag while the queue has work, so single-meeting actions wait their turn. */
+function onQueueChange() {
+  const status = jobs.status();
+  const active = Boolean(status.running) || status.pending.length > 0;
+  if (active && !queueHoldsBusy && !busy) {
+    queueHoldsBusy = true;
+    busy = true;
+  } else if (!active && queueHoldsBusy) {
+    queueHoldsBusy = false;
+    busy = false;
+    progress("");
+  }
+  pushJobs();
+}
+
+/** One runner per job kind: the same code path as the single-meeting buttons. */
+function queueRunners() {
+  const both = (onProgress) => (text) => {
+    progress(text);
+    onProgress(text);
+  };
+  return {
+    transcript: (meetingId, { signal, onProgress }) =>
+      transcribeMeeting(meetingFor(meetingId), { signal, report: both(onProgress) }),
+    summary: async (meetingId, { signal, onProgress }) => {
+      const meeting = meetingFor(meetingId);
+      const result = await summarizeMeeting(meeting, { draft: meeting.draft, signal, report: both(onProgress) });
+      // Nobody is sitting at the editor during a bulk run, so the summary is saved into the draft.
+      store.update(meetingId, { overview: result.suggestion.overview, details: result.suggestion.details });
+      return result;
+    },
+    minutes: (meetingId, { signal, onProgress }) =>
+      draftMeetingMinutes(meetingFor(meetingId), { currentMarkdown: "", signal, report: both(onProgress) }),
+  };
+}
+
+ipcMain.handle("jobs:enqueue", (_e, items) => {
+  if (busy && !queueHoldsBusy) return { ok: false, error: "Another action is still running. Wait for it to finish." };
+  const list = (Array.isArray(items) ? items : [])
+    .filter((it) => it && typeof it.meetingId === "string" && ["transcript", "summary", "minutes"].includes(it.kind))
+    .map((it) => ({ meetingId: it.meetingId, kind: it.kind }));
+  if (!list.length) return { ok: false, error: "Nothing to add: pick at least one meeting." };
+  try {
+    const result = jobs.enqueue(list);
+    onQueueChange();
+    return { ok: true, ...result, status: jobs.status() };
+  } catch (e) {
+    return failure(e);
+  }
+});
+
+ipcMain.handle("jobs:status", () => ({ ok: true, status: jobs.status() }));
+
+ipcMain.handle("jobs:cancelAll", () => {
+  jobs.cancelAll();
+  return { ok: true, status: jobs.status() };
+});
+
+ipcMain.handle("jobs:cancelOne", (_e, meetingId, kind) => {
+  jobs.cancelOne(meetingId, kind);
+  return { ok: true, status: jobs.status() };
+});
+
+/** Meetings to pick from for bulk work, with a Deepgram estimate.
+ *  options: { kinds: ["council", …] | "all", monthsBack, needs: ["transcript" | "summary" | "minutes"] } */
+ipcMain.handle("meetings:candidates", (_e, options) => {
+  const o = options && typeof options === "object" ? options : {};
+  const kinds = o.kinds === "all" ? null : new Set(Array.isArray(o.kinds) && o.kinds.length ? o.kinds : COUNCIL_KINDS);
+  const monthsBack = Number(o.monthsBack) > 0 ? Number(o.monthsBack) : 12;
+  const needs = Array.isArray(o.needs) && o.needs.length ? o.needs : ["transcript"];
+  const since = new Date();
+  since.setMonth(since.getMonth() - monthsBack);
+  const sinceIso = since.toISOString().slice(0, 10);
+  const candidates = [];
+  for (const m of snapshot().meetings) {
+    const src = m.source || {};
+    if (!m.clipId || m.autoHidden) continue;
+    if (kinds && !kinds.has(src.kind)) continue;
+    if (!m.draft.date || m.draft.date < sinceIso) continue;
+    const has = {
+      transcript: Boolean(m.transcript),
+      summary: Boolean(String(m.draft.overview || "").trim()),
+      minutes: Boolean(m.minutes),
+    };
+    const missing = needs.filter((n) => !has[n]);
+    if (!missing.length) continue;
+    const minutes = src.durationSec ? Math.round(src.durationSec / 60) : null;
+    const estMinutes = minutes || UNKNOWN_DURATION_MIN;
+    candidates.push({
+      id: m.id,
+      clipId: m.clipId,
+      date: m.draft.date,
+      title: src.title || m.draft.title,
+      body: src.body || null,
+      kind: src.kind || null,
+      durationSec: src.durationSec || null,
+      durationLabel: src.durationLabel || "",
+      durationKnown: Boolean(minutes),
+      estimatedMinutes: estMinutes,
+      estimatedCost: has.transcript ? 0 : Number((estMinutes * DEEPGRAM_PER_MINUTE).toFixed(2)),
+      has,
+      missing,
+    });
+  }
+  return { ok: true, candidates, rate: DEEPGRAM_PER_MINUTE, assumedMinutes: UNKNOWN_DURATION_MIN };
+});
+
 // Dev helper: OV_USER_DATA=<folder> keeps test runs away from the real review state and keys.
 if (process.env.OV_USER_DATA) app.setPath("userData", process.env.OV_USER_DATA);
 
 app.whenReady().then(() => {
-  store = new ReviewStore(app.getPath("userData"));
+  const userData = app.getPath("userData");
+  store = new ReviewStore(userData);
+  corpus = new Corpus({ transcriptsDir: transcriptsDir(), minutesDir: minutesDir() });
+  topics = new TopicStore(userData);
+  jobs = new JobQueue({ runners: queueRunners() });
+  jobs.onChange(onQueueChange);
   cleanupTemp(tempDir());
   createWindow();
 });
@@ -600,6 +906,7 @@ app.whenReady().then(() => {
 app.on("before-quit", () => {
   // Stop a running download so ffmpeg does not keep going after the window closes.
   if (currentJob) currentJob.controller.abort();
+  if (jobs) jobs.cancelAll();
 });
 
 app.on("window-all-closed", () => app.quit());

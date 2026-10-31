@@ -1,0 +1,99 @@
+import { useState } from "react";
+import { api } from "../api.js";
+import { Modal } from "./ui.jsx";
+
+export function Settings({ settings, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    githubRepo: settings.githubRepo,
+    githubBranch: settings.githubBranch,
+    widgetUrl: settings.widgetUrl,
+    githubToken: "",
+    anthropicApiKey: "",
+    deepgramApiKey: "",
+  });
+  const [error, setError] = useState("");
+  const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
+
+  async function save() {
+    const update = { githubRepo: form.githubRepo, githubBranch: form.githubBranch, widgetUrl: form.widgetUrl };
+    for (const key of ["anthropicApiKey", "deepgramApiKey", "githubToken"]) {
+      if (form[key].trim()) update[key] = form[key];
+    }
+    const result = await api.saveSettings(update);
+    if (!result.ok) return setError(result.error);
+    onSaved(result.state);
+  }
+
+  async function remove(key) {
+    const result = await api.saveSettings({ [key]: "" });
+    if (result.ok) onSaved(result.state, true);
+  }
+
+  const secret = (label, key, saved, placeholder) => (
+    <label>
+      {label} {saved && <span className="saved">saved</span>}
+      <input
+        type="password"
+        value={form[key]}
+        onChange={set(key)}
+        placeholder={saved ? "Leave blank to keep the saved one" : placeholder}
+      />
+    </label>
+  );
+  const removeButton = (key, saved, text) =>
+    saved && (
+      <>
+        {" "}
+        <button className="link-button" onClick={() => remove(key)}>
+          {text}
+        </button>
+      </>
+    );
+
+  return (
+    <Modal title="Settings" titleId="settings-title" onClose={onClose}>
+      <h3>Writing summaries, minutes and answers</h3>
+      {secret("Anthropic API key", "anthropicApiKey", settings.hasAnthropicApiKey, "sk-ant-…")}
+      <p className="hint">
+        Claude writes each summary, drafts the minutes, and answers questions from the saved transcripts. Use the
+        Town's dedicated Console workspace with a monthly spend limit.
+        {removeButton("anthropicApiKey", settings.hasAnthropicApiKey, "Remove saved key")}
+      </p>
+      {secret("Deepgram API key", "deepgramApiKey", settings.hasDeepgramApiKey, "Deepgram key")}
+      <p className="hint">
+        Deepgram turns the Swagit video into a transcript, about $0.40 for a 90-minute meeting. Each meeting's
+        transcript is saved in Documents\Oro Valley Minutes and reused.
+        {removeButton("deepgramApiKey", settings.hasDeepgramApiKey, "Remove saved key")}
+      </p>
+
+      <h3>Publishing summaries to the website</h3>
+      <label>
+        GitHub repository
+        <input value={form.githubRepo} onChange={set("githubRepo")} placeholder="owner/repo" />
+      </label>
+      <label>
+        Branch
+        <input value={form.githubBranch} onChange={set("githubBranch")} />
+      </label>
+      {secret("GitHub token", "githubToken", settings.hasGithubToken, "github_pat_…")}
+      <p className="hint">
+        Use a fine-grained token limited to this one repository with <strong>Contents: Read and write</strong>. IT can
+        provide it.
+        {removeButton("githubToken", settings.hasGithubToken, "Remove saved token")}
+      </p>
+      <label>
+        Widget web address
+        <input value={form.widgetUrl} onChange={set("widgetUrl")} />
+      </label>
+      <p className="hint">The Town's keys are encrypted for your Windows account and stay on this computer.</p>
+
+      {error && <p className="error">{error}</p>}
+      <div className="modal-actions">
+        <button onClick={onClose}>Cancel</button>
+        <button className="primary" onClick={save}>
+          Save
+        </button>
+      </div>
+    </Modal>
+  );
+}

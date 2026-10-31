@@ -1,6 +1,6 @@
 # Oro Valley Council Meeting Dashboard
 
-A staff tool for the Town of Oro Valley, Arizona, that turns each Town Council meeting recording into a transcript, a plain-language summary for the Town website, and a draft of the minutes for the Town Clerk. Nothing reaches the website until a staff member reviews and approves it, and the minutes draft is never published by the app at all.
+A meeting analysis tool for Town of Oro Valley, Arizona staff. It turns each Town Council meeting recording into a searchable transcript, a plain-language summary, and a draft of the minutes for the Town Clerk, then lets staff search every transcript by keyword, watch topics over time, and ask Claude questions that are answered with timestamped citations. Summaries can also be published to a small widget on the Town website, but only after a staff member approves them; the minutes draft is never published by the app at all.
 
 ```
 Swagit video + Destiny agenda ──► Dashboard app (staff PC) ──► GitHub: widget/data/meetings.json ──► GitHub Pages ──► iframe on orovalleyaz.gov
@@ -11,7 +11,7 @@ Swagit video + Destiny agenda ──► Dashboard app (staff PC) ──► GitHu
 
 - **Swagit** (`orovalleyaz.new.swagit.com`) is the Town's public video archive. Each video page has an HLS stream, a signed MP4 download, and a "video index" of agenda items with timestamps. The app reads the archive for new recordings and streams the audio through the bundled ffmpeg, transcribes it with Deepgram, and asks Claude for the summary and the minutes draft.
 - **Destiny AgendaQuick** (`destinyhosted.com`, id 67682) is the Town's agenda system. It gives the month-by-month meeting list, the posted agenda for each meeting (items, memo links, packet PDF), the published minutes, and the link from each meeting to its Swagit video.
-- **Dashboard app** (`review-app/`, Electron) lists meetings and gives each one four tabs: **Summary**, **Transcript**, **Minutes**, and **Agenda**. The reviewer edits, approves, and publishes summaries; transcripts and minutes drafts stay on the PC as files.
+- **Dashboard app** (`review-app/`, Electron) has four views. **Meetings** lists every recording and gives each one four tabs: **Summary**, **Transcript**, **Minutes**, and **Agenda**. **Search** finds words and phrases across every saved transcript, summary, and minutes draft. **Topics** watches a list of keywords and shows mentions by month and by meeting. **Ask Claude** answers a question from the transcripts with citations that open the recording at that moment. Transcripts and minutes drafts stay on the PC as files; a bulk **Transcribe meetings…** dialog fills the archive.
 - **Widget** (`widget/`) is a static page: the latest meeting with an overview, a "Read the full summary" expander and a video link, then earlier meetings, plus a "not the official minutes" note. It is embedded in an iframe on the Town website.
 
 ## Folders
@@ -57,13 +57,23 @@ Either way, open **Settings** on first launch and paste the three keys described
 
    The script resizes the iframe to fit. If the website strips scripts, the iframe still works at the fixed height and scrolls inside. Add `?count=3` to the `src` to show fewer meetings, for example in a sidebar.
 
+## Analysis: search, topics, and questions
+
+Everything below works on the transcripts, summaries, and minutes drafts saved on the PC, so the first step is to build the archive: click **Transcribe meetings…**, pick the meetings (by default, Town Council meetings from the last 12 months without a transcript), check the Deepgram cost estimate, and start. The queue runs one meeting at a time in the background; a **Working n/m** pill in the top bar shows progress and opens the queue. The same dialog can also write summaries and minutes drafts for each meeting.
+
+**Search.** Type words or a `"quoted phrase"`; `-word` excludes, `word*` matches a prefix. Filter by content type, meeting body, and dates; sort by relevance or date. Results are grouped by meeting with the matching lines highlighted, the time and speaker label, a **Watch at** link that opens Swagit at that second, and a click that opens the transcript at that line. **Save as topic** turns the query into a watched topic.
+
+**Topics.** A watch list of keywords (each topic can have several terms or phrases). For each topic: mentions per month for the last year, and the meetings that mention it with the first-mention time. Topics that occur in a meeting show as chips in that meeting's header.
+
+**Ask Claude.** Ask a question in plain words, scoped to all meetings, a date range, Town Council only, or one meeting. The app finds the most relevant transcript passages, sends only those to Claude, and shows the answer with numbered citations; each citation lists the meeting, the time, and the quoted line, and opens the transcript or the video there. Answers come from automatic transcripts and staff summaries, so verify against the video before relying on them. The last 50 questions are kept on the PC.
+
 ## After each meeting (twice a month)
 
 Open **Oro Valley Council Dashboard** → **Check for new meetings**. New Swagit recordings appear under **To review** with nothing written yet. Other boards and commissions and duplicate recordings of one date get a yellow note; a very short recording is flagged once its length is known. Pick the meeting; its four tabs work in any order, but the transcript is made first whichever tab asks for it.
 
 **Transcript tab.** Click **Transcribe now**. The first time takes about 5 to 15 minutes: the app downloads the audio from Swagit, transcribes it, and saves the result. The transcript shows in the app with search; each timestamp opens the Swagit player at that moment. "Speaker N" labels are automatic and do not identify people.
 
-**Summary tab.** Click **Write summary with Claude**. The app reads the posted agenda from Destiny and the saved transcript and writes an overview and a full summary. Check them against the video and the agenda (links are under the fields). Edit; the right side shows exactly how the summary will look on the website. Click **Approve**, or **Hide** for recordings that shouldn't be published. Then click **Publish to website**. The site updates within a few minutes. Editing or hiding an approved meeting and publishing again updates or removes it. If two people review on different PCs, each **Check for new meetings** picks up what the other published, and the app refuses to publish over changes it hasn't seen.
+**Summary tab.** Click **Write summary with Claude**. The app reads the posted agenda from Destiny and the saved transcript and writes an overview and a full summary. Check them against the video and the agenda (links are under the fields). Edit; the right side shows exactly how the summary will look on the website. Publishing is optional and lives under the **Website ▾** menu: click **Approve** (or **Hide** for recordings that shouldn't be published), then **Website ▾ → Publish to website**. The site updates within a few minutes. Editing or hiding an approved meeting and publishing again updates or removes it. If two people review on different PCs, each **Check for new meetings** picks up what the other published, and the app refuses to publish over changes it hasn't seen.
 
 **Minutes tab.** Click **Draft minutes with Claude**. Claude writes the minutes in the Town's own format from the transcript, the agenda, and the Swagit video index, and the draft opens in a markdown editor with a preview. Export it to Word (`.docx`), to text, or to the clipboard. **Compare with published minutes** shows the Town Clerk's final minutes from Destiny beside the draft, once they are posted. The draft is a starting point for the Town Clerk and nothing more: the app never publishes it, it is not posted to the website or to GitHub, and the Clerk's own minutes remain the only official record.
 
@@ -138,4 +148,5 @@ node tools\preview-widget.js --sample   # with samples\meetings.sample.json
 
 ## History
 
+- **2026-10-31 (v1.1):** Reframed as an analysis tool: Search across all transcripts, summaries, and minutes drafts; watched Topics with monthly trends; Ask Claude with timestamped citations; bulk transcription queue; publishing moved under a Website menu. Town-brand restyle, installer icon, start script.
 - **2026-10-30 (v1.0):** Built from the City of Eloy council widget (v2.0). Video from Swagit, agendas and minutes from Destiny AgendaQuick. Adds Transcript, Minutes, and Agenda tabs; meeting ids are `swagit-<videoId>`.
