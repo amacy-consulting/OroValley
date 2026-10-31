@@ -105,8 +105,8 @@ Transcripts are saved in `Documents\Oro Valley Minutes\Transcripts` and minutes 
 cd review-app
 npm install                              # first time only; downloads ffmpeg (needs access to GitHub)
 node node_modules\electron\install.js    # if npm held back Electron's download script
-npm test                                 # offline smoke test with saved Swagit/Destiny fixtures and a fake GitHub (no keys)
-node minutes-test.js                     # offline minutes engine test (writes to minutes-test-output\)
+npm test                                 # offline tests: sources + review flow (fixtures, fake GitHub), minutes engine, search/topics/ask engine; no keys
+node search-test.js                      # the search engine test alone, with timing over 100 generated transcripts
 npm start                                # builds the screens and opens the app
 npm run dist                             # builds release\Oro Valley Council Dashboard Setup.exe
 
