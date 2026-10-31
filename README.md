@@ -26,7 +26,17 @@ Swagit video + Destiny agenda ──► Dashboard app (staff PC) ──► GitHu
 | `tools/preview-widget.js` | Previews the widget locally, optionally with sample data. |
 | `samples/` | Sample data for the local preview. Kept out of git (`.gitignore`). |
 | `.github/workflows/pages.yml` | Deploys `widget/` to GitHub Pages on every change. |
+| `Start Oro Valley Council Dashboard.cmd` | Double-click launcher that runs the app from source (installs dependencies the first time). |
 | `city-council-widget-main/` | The City of Eloy app this project was built from. Reference only; not part of the build. |
+
+## Install or start the app
+
+Two ways to run the dashboard on a staff PC:
+
+- **Installer (recommended for staff).** Run `review-appeleaseOro Valley Council Dashboard Setup.exe`. It installs for the current Windows account only (no admin rights), adds a Start menu and desktop shortcut, and bundles everything including ffmpeg. Build it with `npm run dist` (see Develop) and hand the .exe to staff; it contains no keys.
+- **Start script (from source).** Double-click **`Start Oro Valley Council Dashboard.cmd`** at the top of this folder. It needs Node.js installed; the first run downloads dependencies and Electron (a few minutes), later runs start in seconds.
+
+Either way, open **Settings** on first launch and paste the three keys described below.
 
 ## One-time setup
 
