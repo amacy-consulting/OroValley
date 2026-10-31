@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+ <head> 
+  <title>Agenda - View Meetings (All)</title> 
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"> 
+  <meta name="robots" content="noindex,follow"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1"> 
+ <style>
+	.easyReading {max-width:700px; margin:auto; line-height:2.5em;}
+
+	body {
+		margin:0; padding:0.6em;
+		background:#FFF;
+		font-family:Verdana, Arial, Helvetica, sans-serif;
+		font-size:10pt; /* consider changing this to screen-friendly unit */
+	}
+	/* change the background color on required fields that don't get filled in */
+	.focus {background-color:#ffb;}
+
+	.label {font-weight:bold;}
+
+	.section label.rc {font-weight:normal;}	/* override 'normal' bold on section label */
+	span.red, .section span.red {
+		color:#F00;
+		float:none;
+		margin:0;
+	}
+
+	/* content + header + footer */
+	#wrap {
+		width:850px;
+		background:white;
+	}
+	#header h1 {
+		margin:0; padding:0.25em 0;
+		text-align:center;
+		font-size:2em;
+		border-bottom:1px solid;
+	}
+
+	#content {
+		padding:0 1em;
+		margin-left:12.5em;
+	}
+
+	#meeting-table td,
+	#meeting-table th {
+		white-space: nowrap;
+		padding-right:4ex;
+	}
+	#meeting-table td:nth-child(2),
+	#meeting-table th:nth-child(2) {
+		width:100%;
+		white-space:normal;
+	}
+
+	#footer {clear:both;}
+</style>
+<script>
+	function toggleEasyRead() {
+		bodyTag = document.getElementsByTagName("body")[0];
+		result = bodyTag.classList.toggle("easyReading");
+	}
+</script><link rel="stylesheet" href="/public/styles/global.css?v=2026-9-11">
+	<link rel="stylesheet" href="/public/styles/board_order.css">
+	<link rel="stylesheet" href="/public/styles/buttons.css"><style>
+		body { background-color: #FFF; }
+		a.ai_link { text-decoration: none; }
+		dt {
+			float: left;
+			clear: left;
+			width: 15px;
+		}
+		dd {
+			padding:0 0 .25em 1em;
+			margin-left:4em;
+		}
+		div#srchEngine {
+			text-align:right;
+			width:100%;
+			background-color:#FFC;
+			padding:.25em 0;
+			border-bottom:#000 solid 3px;
+		}
+		div#srchEngine h4 {
+			float:left;
+			margin:2px;
+			display:inline;
+		}
+
+		table { clear: both; }
+		tr.galter td { background-color: #f1f1f1; }
+
+		#nav td, .navclass td, #list td, .listclass td {padding-left:0.5em;}
+		#list thead td, .listclass thead td {padding-bottom:0.5em;}
+		#list tbody td, .listclass tbody td {padding:0.5em;}
+		#nav label, .navclass label {display:block; font-weight:bold; text-align:center;}
+		#nav td.relative, .navclass td.relative {white-space:nowrap; padding:0 2em;}
+		#nav, .navclass {margin-bottom:1em;}
+
+		/* use this to style the Logged in as Note Taker message */
+		#noteTaker {
+			text-align: center !important;
+			font-weight: bold !important;
+			background-color: yellow !important;
+		}
+		#go-Subscribe, #go-show, #go-hide, #go-Apply {
+			background: #E1E1E1 !important;
+			border: 1px solid #000;
+			border-top: 1px solid #000;
+			border-left: 1px solid #000;
+		}
+
+		.print-button {display:block; padding:5px; font-size:15px; font-weight:bold; color:#00f; background-color:#F5F5F5;}
+	</style>
+
+	<style media="print">
+		#print { display:none; }
+		div.xform { page-break-before: always; }
+	</style><script src="/public/js/destiny.js"></script>
+	<script src="/public/publish/js/agenda_publish.js"></script>
+	<script src="/public/js/swagitCopy.js?v=2"></script>
+	
+
+	<script>
+		
+		
+			var returnHash = '';
+		
+
+		function doReturn() {
+			if (returnHash != '' && window.location.hash.replace(/^#/,'') != returnHash)
+				window.location = "#" + returnHash;
+		}
+
+		function popupAttachments(iLink,iWindowName) {
+			if (!window.focus)
+				return true;
+
+			window.open(iLink, iWindowName, 'width=640,height=400,scrollbars=yes,resizable=yes');
+			return false;
+		}
+
+		function saveExtNotes(iAction,iReturn){
+			var df = document.form1;
+			df.formaction.value = iAction;
+			df.action = iReturn;
+			df.method = "POST";
+			df.submit();
+			return false;
+		}
+
+		function hsNote(iID,iMode) {
+			var fldS = 'sNote' + iID,
+				fldH = 'hNote' + iID;
+
+			if (iMode == 'hide') {
+				document.getElementById(fldS).style.display = "none";
+				document.getElementById(fldH).style.display = "";
+			}
+			else {
+				document.getElementById(fldS).style.display = "";
+				document.getElementById(fldH).style.display = "none";
+			}
+		}
+
+		function FieldSelected(aField, initValue) {
+			if (!aField.readOnly && aField.value == initValue)
+				aField.value = "";
+		}
+	</script></head> 
+ <body onload="doReturn();"> 
+  <div id="content"> 
+   <form action="/agenda_publish.cfm&#x3f;id&#x3d;67682&amp;mt&#x3d;ALL&amp;fp&#x3d;swagit&amp;get_month&#x3d;10&amp;get_year&#x3d;2026" method="get" name="form1"> 
+    <div> 
+     <table class="tableCollapsed btnsTbl" style="width:100%" role="presentation"> 
+      <tbody> 
+       <tr class="buttons"> 
+        <td colspan="7" class="center"> <br> <a autofocus href="/orovadocs/2025&#x2f;TC&#x2f;20250402_1009&#x2f;AGENDApacket__04-02-25_1048_1007.pdf" aria-label="Click to Download PDF Packet - opens in new window" class="popup" title="Download PDF Packet - opens in new window" target="_blank" id="pdf">DOWNLOAD PDF PACKET</a> <a href="/print_prompt.cfm?seq=1007&amp;reloaded=true&amp;id=67682" class="popup" aria-label="Click to print agenda - opens in new window" target="_blank">PRINT AGENDA</a> 
+         <div class="mobilehide2"> 
+          <a href="#nothing" class="popup" onclick="toggleEasyRead()">READING MODE</a> 
+          <br> 
+          <br> 
+         </div> </td> 
+       </tr> 
+      </tbody> 
+     </table> 
+    </div> 
+    <div> 
+     <table class="no-reflow" style="width:100%" role="presentation"> 
+      <tbody> 
+       <tr class="top"> 
+        <td colspan="7" class="contentwrapper padleft10" style=" font-family:'Arial';"> 
+         <div style="text-align:center"> 
+          <span style="font-size:large"><strong>*AMENDED (4/1/25, 11:30 AM)&nbsp;<br> AGENDA<br> ORO VALLEY TOWN COUNCIL<br> REGULAR SESSION<br> APRIL 2, 2025<br> ORO VALLEY COUNCIL CHAMBERS<br> 11000 N. LA CA&Ntilde;ADA DRIVE</strong></span> 
+         </div> </td> 
+       </tr> 
+       <tr class="top"> 
+        <td colspan="7" class="contentwrapper padleft10" style=" font-family:'Arial';"> <br> For information&nbsp;on public comment procedures, please see the instructions for in person and/or virtual speakers at the end of the agenda.<br> <br> To watch and/or listen to the public meeting online, please visit <a href="https://www.orovalleyaz.gov/town/departments/town-clerk/meetings-and-agendas">https://www.orovalleyaz.gov/town/departments/town-clerk/meetings-and-agendas</a><br> <br> Executive Sessions &ndash; Upon a vote of the majority of the Town Council, the Council may enter into Executive Sessions pursuant to Arizona Revised Statutes &sect;38-431.03 (A)(3) to obtain legal advice on matters listed on the Agenda. </td> 
+       </tr> 
+      </tbody> 
+      <tfoot> 
+       <tr> 
+        <td colspan="7" class="tdempty">&nbsp;</td> 
+       </tr> 
+      </tfoot> 
+      <tbody> 
+       <tr class="top"> 
+        <td class="mediumText tdempty" style=" font-family:'Arial';" width="1%">&nbsp;</td> 
+        <td class="mediumText tdempty" style=" font-family:'Arial';" width="1%">&nbsp;</td> 
+        <td class="mediumText tdempty" style=" font-family:'Arial';" width="1%">&nbsp;</td> 
+        <td class="mediumText tdempty" style=" font-family:'Arial';" width="1%">&nbsp;</td> 
+        <td class="mediumText tdempty" style=" font-family:'Arial';" width="1%">&nbsp;</td> 
+        <td class="mediumText tdempty" style=" font-family:'Arial';" width="90%">&nbsp;<input type="hidden" name="display_ID"></td> 
+        <td class="mediumText tdempty" style=" font-family:'Arial';" width="1%">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <strong>REGULAR SESSION AT OR AFTER 5:00 PM</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734183'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>CALL TO ORDER</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734184'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>ROLL CALL</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734185'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>EXECUTIVE SESSION</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td class=" mediumText" style="font-family:'Arial'; padding-left: 10px;" width="1%"> <a class="ai_link" id="ReturnTo21726" name="ReturnTo21726"></a> </td> 
+        <td class=" mediumText" style="font-family:'Arial'; width:1%;">1.</td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td width="1%" class="tdempty">&nbsp;</td> 
+        <td colspan="2" class="mediumText" style="padding-left: 10px; font-family:'Arial';"> <a class="ai_link" title="View Agenda Memo" href="/agenda_publish.cfm&#x3f;id&#x3d;67682&amp;mt&#x3d;ALL&amp;fp&#x3d;swagit&amp;get_month&#x3d;10&amp;get_year&#x3d;2026&amp;dsp&#x3d;agm&amp;seq&#x3d;5945&amp;rev&#x3d;0&amp;ag&#x3d;1007&amp;ln&#x3d;21726&amp;nseq&#x3d;5998&amp;nrev&#x3d;0&amp;pseq&#x3d;&amp;prev&#x3d;">Pursuant to A.R.S. &sect;38-431.03 (A)(3) and (A)(4) to obtain legal advice regarding the Oro Valley Church of the Nazarene (OVCN) application for additional height regarding the applicant&#39;s appeal of the Planning &amp; Zoning Commission&#39;s denial of the OVCN height request on January 14, 2025</a> </td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td class=" mediumText" style="font-family:'Arial'; padding-left: 10px;" width="1%"> <a class="ai_link" id="ReturnTo21957" name="ReturnTo21957"></a> </td> 
+        <td class=" mediumText" style="font-family:'Arial'; width:1%;">2.</td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td width="1%" class="tdempty">&nbsp;</td> 
+        <td colspan="2" class="mediumText" style="padding-left: 10px; font-family:'Arial';"> <a class="ai_link" title="View Agenda Memo" href="/agenda_publish.cfm&#x3f;id&#x3d;67682&amp;mt&#x3d;ALL&amp;fp&#x3d;swagit&amp;get_month&#x3d;10&amp;get_year&#x3d;2026&amp;dsp&#x3d;agm&amp;seq&#x3d;5998&amp;rev&#x3d;0&amp;ag&#x3d;1007&amp;ln&#x3d;21957&amp;nseq&#x3d;&amp;nrev&#x3d;&amp;pseq&#x3d;5945&amp;prev&#x3d;0">Pursuant to A.R.S. &sect;38-431.03 (A)(3) and (A)(4) to discuss or consult with the attorneys for the public body regarding pending litigation on the Clifton matter in order to consider its position and instruct its attorneys</a> </td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <strong>RESUME REGULAR SESSION AT OR AFTER 6:00 PM</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734189'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>CALL TO ORDER</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734190'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>ROLL CALL</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td class=" mediumText" style="font-family:'Arial'; padding-left: 10px;" width="1%"> <a class="ai_link" id="ReturnTo21958" name="ReturnTo21958"></a> </td> 
+        <td class=" mediumText" style="font-family:'Arial'; width:1%;">1.</td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td width="1%" class="tdempty">&nbsp;</td> 
+        <td colspan="2" class="mediumText" style="padding-left: 10px; font-family:'Arial';"> <a class="" aria-label="Play video in a new tab, on the external website, swagit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734191'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <a class="ai_link" title="View Agenda Memo" href="/agenda_publish.cfm&#x3f;id&#x3d;67682&amp;mt&#x3d;ALL&amp;fp&#x3d;swagit&amp;get_month&#x3d;10&amp;get_year&#x3d;2026&amp;dsp&#x3d;agm&amp;seq&#x3d;5999&amp;rev&#x3d;0&amp;ag&#x3d;1007&amp;ln&#x3d;21958&amp;nseq&#x3d;&amp;nrev&#x3d;&amp;pseq&#x3d;&amp;prev&#x3d;">APPROVAL OF ANY DIRECTION TO THE TOWN ATTORNEY AND/OR NECESSARY STAFF AS DISCUSSED IN EXECUTIVE SESSION REGARDING ACTIONS TO TAKE IN THE CLIFTON LITIGATION MATTER</a> </td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734192'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>PLEDGE OF ALLEGIANCE</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734193'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>UPCOMING MEETING ANNOUNCEMENTS</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734194'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>MAYOR AND COUNCIL REPORTS ON CURRENT EVENTS</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734195'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>TOWN MANAGER&#39;S REPORT ON CURRENT EVENTS</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734196'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>ORDER OF BUSINESS: MAYOR WILL REVIEW THE ORDER OF THE MEETING</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <strong>INFORMATIONAL ITEMS</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734198'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>CALL TO AUDIENCE </strong>&ndash; At this time, any member of the public is allowed to address the Mayor and Town Council on any issue <em><strong>not listed on today&rsquo;s agenda. </strong></em>Pursuant to the Arizona Open Meeting Law, individual Council Members may ask Town Staff to review the matter, ask that the matter be placed on a future agenda, or respond to criticism made by speakers. However, the Mayor and Council may not discuss or take legal action on matters raised during &ldquo;Call to Audience.&rdquo; In order to speak during &ldquo;Call to Audience&rdquo; please specify what you wish to discuss when completing the blue speaker card.</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <strong>PRESENTATIONS</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td class=" mediumText" style="font-family:'Arial'; padding-left: 10px;" width="1%"> <a class="ai_link" id="ReturnTo21920" name="ReturnTo21920"></a> </td> 
+        <td class=" mediumText" style="font-family:'Arial'; width:1%;">1.</td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td width="1%" class="tdempty">&nbsp;</td> 
+        <td colspan="2" class="mediumText" style="padding-left: 10px; font-family:'Arial';"> <a class="" aria-label="Play video in a new tab, on the external website, swagit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734200'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <a class="ai_link" title="View Agenda Memo" href="/agenda_publish.cfm&#x3f;id&#x3d;67682&amp;mt&#x3d;ALL&amp;fp&#x3d;swagit&amp;get_month&#x3d;10&amp;get_year&#x3d;2026&amp;dsp&#x3d;agm&amp;seq&#x3d;5981&amp;rev&#x3d;0&amp;ag&#x3d;1007&amp;ln&#x3d;21920&amp;nseq&#x3d;5936&amp;nrev&#x3d;0&amp;pseq&#x3d;&amp;prev&#x3d;">Proclamation - Week of the Young Child</a> </td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td class=" mediumText" style="font-family:'Arial'; padding-left: 10px;" width="1%"> <a class="ai_link" id="ReturnTo21925" name="ReturnTo21925"></a> </td> 
+        <td class=" mediumText" style="font-family:'Arial'; width:1%;">2.</td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td width="1%" class="tdempty">&nbsp;</td> 
+        <td colspan="2" class="mediumText" style="padding-left: 10px; font-family:'Arial';"> <a class="" aria-label="Play video in a new tab, on the external website, swagit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734201'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <a class="ai_link" title="View Agenda Memo" href="/agenda_publish.cfm&#x3f;id&#x3d;67682&amp;mt&#x3d;ALL&amp;fp&#x3d;swagit&amp;get_month&#x3d;10&amp;get_year&#x3d;2026&amp;dsp&#x3d;agm&amp;seq&#x3d;5936&amp;rev&#x3d;0&amp;ag&#x3d;1007&amp;ln&#x3d;21925&amp;nseq&#x3d;6018&amp;nrev&#x3d;0&amp;pseq&#x3d;5981&amp;prev&#x3d;0">Presentation and update from Children&#39;s Museum Executive Director Hilary Van Alsburg</a> </td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td class=" mediumText" style="font-family:'Arial'; padding-left: 10px;" width="1%"> <a class="ai_link" id="ReturnTo22036" name="ReturnTo22036"></a> </td> 
+        <td class=" mediumText" style="font-family:'Arial'; width:1%;">3.</td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td width="1%" class="tdempty">&nbsp;</td> 
+        <td colspan="2" class="mediumText" style="padding-left: 10px; font-family:'Arial';"> <a class="" aria-label="Play video in a new tab, on the external website, swagit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734202'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <a class="ai_link" title="View Agenda Memo" href="/agenda_publish.cfm&#x3f;id&#x3d;67682&amp;mt&#x3d;ALL&amp;fp&#x3d;swagit&amp;get_month&#x3d;10&amp;get_year&#x3d;2026&amp;dsp&#x3d;agm&amp;seq&#x3d;6018&amp;rev&#x3d;0&amp;ag&#x3d;1007&amp;ln&#x3d;22036&amp;nseq&#x3d;&amp;nrev&#x3d;&amp;pseq&#x3d;5936&amp;prev&#x3d;0">*Proclamation - Education and Sharing Day</a> </td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734203'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>CONSENT AGENDA <br> (Consideration and/or possible action)</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td class=" mediumText" style="font-family:'Arial'; padding-left: 10px;" width="1%"> <a class="ai_link" id="ReturnTo20839" name="ReturnTo20839"></a> </td> 
+        <td class=" mediumText" style="font-family:'Arial'; width:1%;">A.</td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td width="1%" class="tdempty">&nbsp;</td> 
+        <td colspan="2" class="mediumText" style="padding-left: 10px; font-family:'Arial';"> <a class="ai_link" title="View Agenda Memo" href="/agenda_publish.cfm&#x3f;id&#x3d;67682&amp;mt&#x3d;ALL&amp;fp&#x3d;swagit&amp;get_month&#x3d;10&amp;get_year&#x3d;2026&amp;dsp&#x3d;agm&amp;seq&#x3d;5997&amp;rev&#x3d;0&amp;ag&#x3d;1007&amp;ln&#x3d;20839&amp;nseq&#x3d;5982&amp;nrev&#x3d;0&amp;pseq&#x3d;&amp;prev&#x3d;">Minutes - March 19, 2025</a> </td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td class=" mediumText" style="font-family:'Arial'; padding-left: 10px;" width="1%"> <a class="ai_link" id="ReturnTo21923" name="ReturnTo21923"></a> </td> 
+        <td class=" mediumText" style="font-family:'Arial'; width:1%;">B.</td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td width="1%" class="tdempty">&nbsp;</td> 
+        <td colspan="2" class="mediumText" style="padding-left: 10px; font-family:'Arial';"> <a class="ai_link" title="View Agenda Memo" href="/agenda_publish.cfm&#x3f;id&#x3d;67682&amp;mt&#x3d;ALL&amp;fp&#x3d;swagit&amp;get_month&#x3d;10&amp;get_year&#x3d;2026&amp;dsp&#x3d;agm&amp;seq&#x3d;5982&amp;rev&#x3d;0&amp;ag&#x3d;1007&amp;ln&#x3d;21923&amp;nseq&#x3d;&amp;nrev&#x3d;&amp;pseq&#x3d;5997&amp;prev&#x3d;0"><span style="font-size:11pt"><span><span style="font-family:Aptos,sans-serif">Request for approval of a two year extension of the Foothills Business Park Final Plat amendment&nbsp;</span></span></span><span style="font-size:11pt"><span><span style="font-family:Aptos,sans-serif">located near the northeast corner of Oracle Road and Hanley Boulevard</span></span></span></a> </td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <strong>REGULAR AGENDA</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td class=" mediumText" style="font-family:'Arial'; padding-left: 10px;" width="1%"> <a class="ai_link" id="ReturnTo21872" name="ReturnTo21872"></a> </td> 
+        <td class=" mediumText" style="font-family:'Arial'; width:1%;">2.</td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td width="1%" class="tdempty">&nbsp;</td> 
+        <td colspan="2" class="mediumText" style="padding-left: 10px; font-family:'Arial';"> <a class="" aria-label="Play video in a new tab, on the external website, swagit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734207'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <a class="ai_link" title="View Agenda Memo" href="/agenda_publish.cfm&#x3f;id&#x3d;67682&amp;mt&#x3d;ALL&amp;fp&#x3d;swagit&amp;get_month&#x3d;10&amp;get_year&#x3d;2026&amp;dsp&#x3d;agm&amp;seq&#x3d;5946&amp;rev&#x3d;0&amp;ag&#x3d;1007&amp;ln&#x3d;21872&amp;nseq&#x3d;&amp;nrev&#x3d;&amp;pseq&#x3d;&amp;prev&#x3d;">TWO ITEMS REGARDING THE PLANNING AND ZONING COMMISSION&#39;S DENIAL OF AN APPLICANT&#39;S REQUEST FOR INCREASED BUILDING HEIGHT ALLOWANCES WITHIN PRIVATE SCHOOL ZONING FOR A PROPOSED NEW ORO VALLEY CHURCH OF THE NAZARENE SANCTUARY AND MULTIPURPOSE BUILDING SITUATED NORTHEAST OF THE CALLE CONCORDIA AND CALLE BUENA VISTA INTERSECTION<br> <br> ITEM A: APPLICANT&#39;S REQUEST TO CONTINUE PUBLIC HEARING REGARDING AN APPEAL OF THE PLANNING AND ZONING COMMISSION&#39;S DENIAL FOR A PERIOD OF EIGHT MONTHS<br> <br> ITEM B: PUBLIC HEARING: DISCUSSION AND POSSIBLE ACTION REGARDING AN APPEAL OF THE PLANNING AND ZONING COMMISSION DENIAL OF THE APPLICANT&rsquo;S REQUEST FOR INCREASED BUILDING HEIGHT ALLOWANCES WITHIN PRIVATE SCHOOL ZONING FOR A PROPOSED NEW ORO VALLEY CHURCH OF THE NAZARENE SANCTUARY AND MULTIPURPOSE BUILDING SITUATED NORTHEAST OF THE CALLE CONCORDIA AND CALLE BUENA VISTA INTERSECTION</a> </td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734208'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>FUTURE AGENDA ITEMS</strong> (The Council may bring forth general topics for future meeting agendas. Council may not discuss, deliberate or take any action on the topics presented pursuant to ARS 38-431.02H)</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734209'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>EXECUTIVE SESSION</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td class=" mediumText" style="font-family:'Arial'; padding-left: 10px;" width="1%"> <a class="ai_link" id="ReturnTo21932" name="ReturnTo21932"></a> </td> 
+        <td class=" mediumText" style="font-family:'Arial'; width:1%;">3.</td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td width="1%" class="tdempty">&nbsp;</td> 
+        <td colspan="2" class="mediumText" style="padding-left: 10px; font-family:'Arial';"> <a class="ai_link" title="View Agenda Memo" href="/agenda_publish.cfm&#x3f;id&#x3d;67682&amp;mt&#x3d;ALL&amp;fp&#x3d;swagit&amp;get_month&#x3d;10&amp;get_year&#x3d;2026&amp;dsp&#x3d;agm&amp;seq&#x3d;5627&amp;rev&#x3d;0&amp;ag&#x3d;1007&amp;ln&#x3d;21932&amp;nseq&#x3d;&amp;nrev&#x3d;&amp;pseq&#x3d;&amp;prev&#x3d;">Pursuant to A.R.S. 38-431.03 (A)(5) regarding discussions with designated representatives of the public body to consider its position and instructions regarding negotiations with employee organizations regarding salaries or compensation</a> </td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <strong>RESUME REGULAR SESSION</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <strong>CALL TO ORDER</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <strong>REGULAR AGENDA</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td class=" mediumText" style="font-family:'Arial'; padding-left: 10px;" width="1%"> <a class="ai_link" id="ReturnTo21934" name="ReturnTo21934"></a> </td> 
+        <td class=" mediumText" style="font-family:'Arial'; width:1%;">3.</td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td class="mediumText tdempty" style="font-family:'Arial'; width:1%;"></td> 
+        <td width="1%" class="tdempty">&nbsp;</td> 
+        <td colspan="2" class="mediumText" style="padding-left: 10px; font-family:'Arial';"> <a class="" aria-label="Play video in a new tab, on the external website, swagit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734214'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <a class="ai_link" title="View Agenda Memo" href="/agenda_publish.cfm&#x3f;id&#x3d;67682&amp;mt&#x3d;ALL&amp;fp&#x3d;swagit&amp;get_month&#x3d;10&amp;get_year&#x3d;2026&amp;dsp&#x3d;agm&amp;seq&#x3d;5990&amp;rev&#x3d;0&amp;ag&#x3d;1007&amp;ln&#x3d;21934&amp;nseq&#x3d;&amp;nrev&#x3d;&amp;pseq&#x3d;&amp;prev&#x3d;">APPROVAL OF ANY DIRECTION TO THE TOWN MANAGER AND/OR NECESSARY STAFF AS DISCUSSED IN EXECUTIVE SESSION PERTAINING TO NEGOTIATIONS WITH EMPLOYEE ORGANIZATIONS REGARDING SALARIES OR COMPENSATION</a> </td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="mediumText" style="font-family:'Arial'; padding-left: 10px;"> <a class="" aria-label="Play video in a new tab, on the external website, swaggit.com." title="" href="#" onclick="swagitPlay('https://orovalleyaz.new.swagit.com/videos/339060#25734215'); return false;"><img src="/public/images/camera.jpg" height="25" width="25" class="cameraimg" alt="camera icon"></a> <strong>ADJOURNMENT</strong></td> 
+       </tr> 
+       <tr class=" top"> 
+        <td colspan="7" class="tdempty" style="padding-bottom: 5px;">&nbsp;</td> 
+       </tr> 
+       <tr class="top"> 
+        <td colspan="7"><span style="font-size:Medium">POSTED:&nbsp; 3/27/25 at 5:00 p.m. by dt<br> AMENDED AGENDA POSTED: 4/1/25 at 3:00 p.m. by dt&nbsp;<br> <br> The Mayor and Council may, at the discretion of the meeting chairperson, discuss any Agenda item.</span><br> <br> <span style="font-size:medium">When possible, a packet of agenda materials as listed above is available for public inspection at least 24 hours prior to the Council meeting in the office of the Town Clerk between the hours of 8:00 a.m. &ndash; 5:00 p.m.<br> <br> The Town of Oro Valley complies with the Americans with Disabilities Act (ADA). If any person with a disability needs any type of accommodation, please notify the Town Clerk&rsquo;s Office at least five days prior to the Council meeting at 229-4700.</span> 
+         <div style="text-align:center"> 
+          <span style="font-size:medium">&nbsp;</span> 
+         </div> 
+         <div style="text-align:center"> 
+          <span style="font-size:Medium"><strong>PUBLIC COMMENT ON AGENDA ITEMS</strong></span> 
+          <br> &nbsp; 
+         </div> 
+         <div> 
+          <span style="font-size:Medium">The Town has modified its public comment procedures for its public bodies to allow for limited remote/virtual comment via Zoom. The public may provide comments remotely only on items posted as required Public Hearings, provided the speaker registers 24 hours prior to the meeting. For all&nbsp;other items, the public may complete a blue speaker card to be recognized in person by the Mayor,&nbsp;according to all other rules and procedures. Written comments can also be emailed to Town Clerk&nbsp;Michael Standish at&nbsp;<a href="mailto:mstandish@orovalleyaz.gov">mstandish@orovalleyaz.gov</a>&nbsp;for distribution to the Town Council prior to the&nbsp;meeting. Further instructions to speakers are noted below.</span> 
+         </div> 
+         <div style="text-align:center"> 
+          <span style="font-size:Medium">&nbsp;<br> <strong>INSTRUCTIONS TO IN-PERSON SPEAKERS</strong></span> 
+          <br> &nbsp; 
+         </div> 
+         <div> 
+          <span style="font-size:Medium">Members of the public shall be allowed to speak on posted public hearings and during Call to&nbsp;Audience when attending the meeting in person.&nbsp; The public may be allowed to speak on other posted&nbsp;items on the agenda at the discretion of the Mayor.<br> <br> If you wish to address the Town Council on any item(s) on this agenda, please complete a blue speaker card located on the Agenda table at the back of the room and give it to the Town Clerk. Please indicate on the blue speaker card which item number and topic you wish to speak on, or, if you wish to speak during Call to Audience, please specify what you wish to discuss.<br> <br> Please step forward to the podium when the Mayor calls on you to address the Council.<br> <br> &nbsp; &nbsp; &nbsp;1. For the record, please state your name and whether or not you are a Town resident.<br> &nbsp; &nbsp; &nbsp; 2. Speak only on the issue currently being discussed by Council. You will only be allowed to&nbsp;<br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; address the Council one time regarding the topic being discussed.<br> &nbsp; &nbsp; &nbsp; 3. Please limit your comments to 3 minutes.<br> &nbsp; &nbsp; &nbsp; 4. During Call to Audience, you may address the Council on any matter that is not on the agenda.<br> &nbsp; &nbsp; &nbsp; 5. Any member of the public speaking must speak in a courteous and respectful manner to those&nbsp;<br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; present.</span> 
+         </div> 
+         <div style="text-align:center"> 
+          <span style="font-size:Medium">&nbsp;<br> <strong>INSTRUCTIONS TO VIRTUAL SPEAKERS FOR PUBLIC HEARINGS</strong></span> 
+          <br> &nbsp; 
+         </div> 
+         <div> 
+          <span style="font-size:Medium">Members of the public may attend the meeting virtually and request to speak virtually on any agenda item that is listed as a Public Hearing.&nbsp; If you wish to address the Town Council virtually during&nbsp;any listed Public Hearing, please complete the online speaker form by clicking here <a href="https://forms.orovalleyaz.gov/forms/bluecard">https://forms.orovalleyaz.gov/forms/bluecard</a>&nbsp;at least 24 hours prior to the start of the meeting.&nbsp; You must provide a valid email address in order to register. Town Staff will email you a link to&nbsp;the Zoom meeting the day of the meeting. After being recognized by the Mayor, staff will unmute&nbsp;your microphone access and you will have 3 minutes to address the Council.&nbsp; Further instructions&nbsp;regarding remote participation will be included in the email.</span> 
+         </div> 
+         <div style="text-align:center"> 
+          <span style="font-size:Medium">&nbsp;<br> <strong>Thank you for your cooperation.</strong></span> 
+         </div> </td> 
+       </tr> 
+      </tbody> 
+     </table> 
+    </div> 
+    <script>
+						document.getElementById("pdf").focus();
+					</script> 
+    <input type="hidden" name="downloadFile" value=""> 
+    <input type="hidden" name="id" value="67682"> 
+    <input type="hidden" name="loc" value=""> 
+    <input type="hidden" name="term" value="N"> 
+   </form> 
+   <script>
+			function validateAgendaMinuteText() {
+				if (document.forms["form2"]["sstr"].value == "") {
+					e = document.getElementById("errorMessage");
+					e.innerHTML = "<p>Please enter search text!</p>";
+					e.focus();
+					return false;
+				}
+			}
+
+			function validateDocSearch() {
+				if (document.forms["srchEngine_form"]["criteria"].value == "") {
+					e = document.getElementById("errorMessage2");
+					e.innerHTML = "<p>Please enter search text!</p>";
+					e.focus();
+					return false;
+				}
+			}
+			</script> 
+   <br> 
+   <div class="aligncenter">
+     &nbsp;&nbsp;&nbsp;&nbsp; 
+    <button type="button" class="bold bottombtn" onclick="goToTop()">&nbsp;GO TO THE TOP OF THE PAGE&nbsp;</button> 
+   </div> 
+   <br> 
+   <script>
+		function goToTop() {
+			document.body.scrollTop = 0; 
+			document.documentElement.scrollTop = 0; 
+			document.getElementById( document.getElementById("pdf") ? "pdf" : "mt" ).focus();
+		}
+	</script> 
+   <div style="display:table; margin:0 auto; text-align:center;"> 
+    <a href="https://www.w3.org/WAI/WCAG2AA-Conformance" title="Explanation of WCAG 2.0 Level AA Conformance - opens in new window" target="_blank" aria-label="Explanation of WCAG 2.0 Level AA Conformance - opens in new window - opens in new window"> <img height="32" width="88" class="wcagimg" src="/public/images/wcag2AA.png" alt="Level double AA conformance, W3C WAI Web Content Accessibility Guidelines 2.0"> </a> 
+   </div> 
+   <p style="font-family:Verdana,Arial,Helvetica,sans-serif; margin:0; padding:2px 0; text-align:center; font-size:10px;">AgendaQuick &copy;2005&ndash;2026 Destiny Software Inc.<span class="mobile-break"> </span>All Rights Reserved.</p> 
+   <script>
+		if (false == "true")
+			document.getElementById('agendaID1').focus();
+		else if (document.getElementById("pdf"))
+			document.getElementById('pdf').focus();
+		else if (document.getElementById('nothingfound'))
+			document.getElementById('nothingFound').focus();
+	</script> 
+   <style></style> 
+  </div>  
+ </body>
+</html>

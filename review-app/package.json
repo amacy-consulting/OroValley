@@ -1,0 +1,65 @@
+{
+  "name": "oro-valley-council-dashboard",
+  "productName": "Oro Valley Council Dashboard",
+  "version": "1.0.0",
+  "description": "Town of Oro Valley council meeting dashboard: Swagit video, Deepgram transcripts, Claude summaries and draft minutes, reviewed by staff before publishing.",
+  "main": "main/main.js",
+  "author": "Town of Oro Valley",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "build:renderer": "vite build",
+    "start": "vite build && electron .",
+    "dist": "vite build && electron-builder --win",
+    "test": "node smoke-test.js",
+    "e2e": "node e2e-test.js"
+  },
+  "build": {
+    "appId": "gov.orovalleyaz.council-dashboard",
+    "productName": "Oro Valley Council Dashboard",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main/**",
+      "dist-renderer/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources",
+        "to": "."
+      }
+    ],
+    "asarUnpack": [
+      "node_modules/ffmpeg-static/**"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "Oro Valley Council Dashboard Setup.exe"
+    }
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.132.1",
+    "@fontsource/source-sans-3": "^5.3.1",
+    "docx": "^9.5.0",
+    "ffmpeg-static": "^5.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.0",
+    "electron": "^44.0.0",
+    "electron-builder": "^26.15.3",
+    "vite": "^8.2.2"
+  },
+  "allowScripts": {
+    "ffmpeg-static@5.3.0": true
+  }
+}

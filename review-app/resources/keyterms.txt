@@ -1,0 +1,56 @@
+# Names and places Deepgram should recognise (one per line, # = comment).
+# Update when Council or staff changes. Keep it short: 50 terms at most.
+# Council (through November 3, 2026)
+Joe Winfield
+Melanie Barrett
+Mo Greene
+Harry Greene
+Joyce Jones-Ivey
+Josh Nicolson
+Mary Murphy
+Elizabeth Robb
+# Council sworn in November 4, 2026
+Rosa Dailey
+Rhonda Piña
+Matt Wood
+# Staff
+Jeff Wilkins
+Mike Standish
+Steven Zraick
+Kara Riley
+Dave Gephart
+Kyle Packer
+# Titles
+Mayor Winfield
+Vice Mayor Barrett
+Councilmember
+Town Clerk
+Town Manager
+# Places and programs
+Oro Valley
+La Cañada
+Naranja Park
+Rancho Vistoso
+Tangerine Road
+Oracle Road
+Pusch Ridge
+Steam Pump Ranch
+Catalina State Park
+Amphitheater School District
+Amphi
+Golder Ranch Fire District
+El Conquistador
+Vistoso Trails
+Cañada del Oro
+Innovation Park
+Oro Valley Marketplace
+Honeybee Canyon
+Lambert Lane
+Moore Road
+Shannon Road
+First Avenue
+Pima County
+RTA Next
+OV Trails Connect
+Consent Agenda
+Executive Session

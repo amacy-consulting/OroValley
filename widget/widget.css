@@ -1,0 +1,247 @@
+/* Town of Oro Valley Town Council meeting summaries widget.
+   Town brand: blue accent, navy headings, charcoal text, cool grey surfaces.
+   Text colors are checked against white and the grey surface for WCAG AA (4.5:1). */
+:root {
+  --ecw-bg: #ffffff;
+  --ecw-surface: #f4f6f8;
+  --ecw-ink: #3d3b38;
+  --ecw-ink-soft: #5f5d59;
+  --ecw-line: #dfe5eb;
+  --ecw-accent: #236298;
+  --ecw-accent-dark: #002d74;
+  --ecw-accent-soft: #e9f1f8;
+  --ecw-copper: #236298;
+  --ecw-copper-ink: #236298;
+  --ecw-gold: #f7b917;
+  --ecw-radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--ecw-bg);
+  color: var(--ecw-ink);
+  font-family: "Source Sans Pro", "Source Sans 3", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.ecw {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.ecw a {
+  color: var(--ecw-accent);
+}
+
+.ecw a:hover {
+  color: var(--ecw-accent-dark);
+  text-decoration-color: var(--ecw-gold);
+  text-decoration-thickness: 2px;
+}
+
+.ecw :focus-visible {
+  outline: 2px solid var(--ecw-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.ecw-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.ecw-status {
+  margin: 4px 0 20px;
+  color: var(--ecw-ink-soft);
+}
+
+/* Latest meeting */
+.ecw-latest {
+  padding: 18px 20px;
+  background: var(--ecw-surface);
+  border: 1px solid var(--ecw-line);
+  border-left: 3px solid var(--ecw-accent);
+  border-radius: var(--ecw-radius);
+}
+
+.ecw-eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ecw-copper-ink);
+}
+
+.ecw-date {
+  margin: 4px 0 0;
+  font-size: 1.3rem;
+  line-height: 1.25;
+  color: var(--ecw-accent-dark);
+}
+
+.ecw-meta {
+  margin: 2px 0 10px;
+  color: var(--ecw-ink-soft);
+  font-size: 0.92rem;
+}
+
+.ecw-overview p {
+  margin: 0 0 10px;
+}
+
+/* Expandable full summary */
+.ecw-full {
+  margin: 4px 0 8px;
+}
+
+.ecw-full > summary,
+.ecw-row > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.ecw-full > summary::-webkit-details-marker,
+.ecw-row > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ecw-full > summary {
+  display: inline-block;
+  color: var(--ecw-accent);
+  font-weight: 600;
+}
+
+.ecw-full > summary::before,
+.ecw-row > summary::before {
+  content: "▸";
+  display: inline-block;
+  width: 1em;
+  transition: transform 0.15s ease;
+}
+
+.ecw-full[open] > summary::before,
+.ecw-row[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.ecw-md {
+  overflow-wrap: anywhere;
+}
+
+.ecw-full .ecw-md {
+  margin-top: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--ecw-line);
+}
+
+.ecw-md h3,
+.ecw-md h4,
+.ecw-md h5,
+.ecw-md h6 {
+  margin: 14px 0 6px;
+  font-size: 1rem;
+  color: var(--ecw-accent-dark);
+}
+
+.ecw-md p {
+  margin: 0 0 10px;
+}
+
+.ecw-md ul,
+.ecw-md ol {
+  margin: 0 0 10px;
+  padding-left: 1.4em;
+}
+
+.ecw-md li {
+  margin: 3px 0;
+}
+
+.ecw-actions {
+  margin: 8px 0 0;
+}
+
+.ecw-link {
+  font-weight: 600;
+  text-underline-offset: 2px;
+}
+
+/* Earlier meetings */
+.ecw-section-title {
+  margin: 22px 0 6px;
+  font-size: 1.05rem;
+  color: var(--ecw-accent-dark);
+}
+
+.ecw-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ecw-line);
+}
+
+.ecw-list > li {
+  border-bottom: 1px solid var(--ecw-line);
+}
+
+.ecw-row > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 12px 4px;
+}
+
+.ecw-row > summary:hover {
+  background: var(--ecw-surface);
+}
+
+.ecw-row-date {
+  font-weight: 600;
+  min-width: 8.5em;
+}
+
+.ecw-row-title {
+  color: var(--ecw-ink-soft);
+}
+
+.ecw-row-body {
+  padding: 0 4px 14px 1.25em;
+}
+
+/* Footer */
+.ecw-footer {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ecw-line);
+  color: var(--ecw-ink-soft);
+  font-size: 0.85rem;
+}
+
+.ecw-footer p {
+  margin: 0 0 6px;
+}
+
+@media (max-width: 480px) {
+  .ecw {
+    padding: 12px;
+  }
+  .ecw-latest {
+    padding: 14px;
+  }
+  .ecw-date {
+    font-size: 1.15rem;
+  }
+}
