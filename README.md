@@ -1,24 +1,24 @@
 # Oro Valley Council Meeting Dashboard
 
-A meeting analysis tool for Town of Oro Valley, Arizona staff. It turns each Town Council meeting recording into a searchable transcript, a plain-language summary, and a draft of the minutes for the Town Clerk, then lets staff search every transcript by keyword, watch topics over time, and ask Claude questions that are answered with timestamped citations. Everything stays on the staff PC: the app publishes nothing anywhere, and the minutes draft is a starting point for the Clerk, not the official minutes.
+A meeting analysis tool for Town of Oro Valley, Arizona staff. It turns each Town Council meeting recording into a searchable transcript, a plain-language summary, and a draft of the minutes for the Town Clerk, then lets staff search every transcript by keyword, watch topics over time, and ask questions that are answered with timestamped citations. Everything stays on the staff PC: the app publishes nothing anywhere, and the minutes draft is a starting point for the Clerk, not the official minutes.
 
 ```
 Swagit video + Destiny agenda ──► Dashboard app (staff PC)
                                   transcribe, summarize, draft minutes,
-                                  search, topics, Ask Claude
+                                  search, topics, Ask
 ```
 
-- **Swagit** (`orovalleyaz.new.swagit.com`) is the Town's public video archive. Each video page has an HLS stream, a signed MP4 download, and a "video index" of agenda items with timestamps. The app reads the archive for new recordings and streams the audio through the bundled ffmpeg, transcribes it with Deepgram, and asks Claude for the summary and the minutes draft.
+- **Swagit** (`orovalleyaz.new.swagit.com`) is the Town's public video archive. Each video page has an HLS stream, a signed MP4 download, and a "video index" of agenda items with timestamps. The app reads the archive for new recordings and streams the audio through the bundled ffmpeg, transcribes it with Deepgram, and asks the AI model for the summary and the minutes draft.
 - **Destiny AgendaQuick** (`destinyhosted.com`, id 67682) is the Town's agenda system. It gives the month-by-month meeting list, the posted agenda for each meeting (items, memo links, packet PDF), the published minutes, and the link from each meeting to its Swagit video.
-- **Dashboard app** (`review-app/`, Electron) has four views. **Meetings** lists every recording and gives each one four tabs: **Summary**, **Transcript**, **Minutes**, and **Agenda**. **Search** finds words and phrases across every saved transcript, summary, and minutes draft. **Topics** watches a list of keywords and shows mentions by month and by meeting. **Ask Claude** answers a question from the transcripts with citations that open the recording at that moment. Transcripts and minutes drafts stay on the PC as files; a bulk **Transcribe meetings…** dialog fills the archive.
+- **Dashboard app** (`review-app/`, Electron) has four views. **Meetings** lists every recording and gives each one four tabs: **Summary**, **Transcript**, **Minutes**, and **Agenda**. **Search** finds words and phrases across every saved transcript, summary, and minutes draft. **Topics** watches a list of keywords and shows mentions by month and by meeting. **Ask** answers a question from the transcripts with citations that open the recording at that moment. Transcripts and minutes drafts stay on the PC as files; a bulk **Transcribe meetings…** dialog fills the archive.
 
 ## Folders
 
 | Folder | What is in it |
 | --- | --- |
-| `review-app/` | Staff dashboard app. `main/engine/` holds the Swagit and Destiny clients, ffmpeg audio, Deepgram transcription, transcript files, Claude summary, Claude minutes draft, the review state, and the search, topics and Ask Claude engines. |
+| `review-app/` | Staff dashboard app. `main/engine/` holds the Swagit and Destiny clients, ffmpeg audio, Deepgram transcription, transcript files, AI summaries and minutes drafts, the review state, and the search, topics and Ask engines. |
 | `review-app/resources/keyterms.txt` | Names and places Deepgram should spell correctly. Update it when Council or staff change. |
-| `review-app/resources/minutes-sample-*.txt` | A published set of Town minutes that shows Claude the Town's format for the draft. |
+| `review-app/resources/minutes-sample-*.txt` | A published set of Town minutes that shows the AI model the Town's format for the draft. |
 | `review-app/test-fixtures/` | Saved Swagit and Destiny pages and a sample Deepgram response for the offline tests. |
 | `Start Oro Valley Council Dashboard.cmd` | Double-click launcher that runs the app from source (installs dependencies the first time). |
 | `city-council-widget-main/` | The City of Eloy app this project was built from. Reference only; not part of the build. |
@@ -36,7 +36,7 @@ Either way, open **Settings** on first launch and paste the two keys described b
 
 **Keys.** In the dashboard app's Settings on each PC, paste two secrets. They are encrypted for that Windows account (Electron `safeStorage`, Windows DPAPI) and never leave the PC. The installer contains no keys.
 
-- **Anthropic API key.** Claude writes each summary and each minutes draft from the transcript and agenda, and answers questions in Ask Claude. Use a dedicated Console workspace with a monthly spend limit. A summary or a minutes draft sends one meeting transcript each; a question sends only the passages that bear on it.
+- **Anthropic API key.** The AI model writes each summary and each minutes draft from the transcript and agenda, and answers questions in Ask. Use a dedicated Console workspace with a monthly spend limit. A summary or a minutes draft sends one meeting transcript each; a question sends only the passages that bear on it.
 - **Deepgram API key.** Transcribes the recording (Nova-3 with speaker separation; about $0.0043 per minute, roughly $0.50 for a two-hour meeting). Create a dedicated Deepgram project and key, with a usage limit if available.
 
 ## Analysis: search, topics, and questions
@@ -47,7 +47,7 @@ Everything below works on the transcripts, summaries, and minutes drafts saved o
 
 **Topics.** A watch list of keywords (each topic can have several terms or phrases). For each topic: mentions per month for the last year, and the meetings that mention it with the first-mention time. Topics that occur in a meeting show as chips in that meeting's header.
 
-**Ask Claude.** Ask a question in plain words, scoped to all meetings, a date range, Town Council only, or one meeting. The app finds the most relevant transcript passages, sends only those to Claude, and shows the answer with numbered citations; each citation lists the meeting, the time, and the quoted line, and opens the transcript or the video there. Answers come from automatic transcripts and staff summaries, so verify against the video before relying on them. The last 50 questions are kept on the PC.
+**Ask.** Ask a question in plain words, scoped to all meetings, a date range, Town Council only, or one meeting. The app finds the most relevant transcript passages, sends only those to the AI model, and shows the answer with numbered citations; each citation lists the meeting, the time, and the quoted line, and opens the transcript or the video there. Answers come from automatic transcripts and staff summaries, so verify against the video before relying on them. The last 50 questions are kept on the PC.
 
 ## After each meeting (twice a month)
 
@@ -55,13 +55,13 @@ Open **Oro Valley Council Dashboard** → **Check for new meetings**. New Swagit
 
 **Transcript tab.** Click **Transcribe now**. The first time takes about 5 to 15 minutes: the app downloads the audio from Swagit, transcribes it, and saves the result. The transcript shows in the app with search; each timestamp opens the Swagit player at that moment. "Speaker N" labels are automatic and do not identify people.
 
-**Summary tab.** Click **Write summary with Claude**. Claude writes a plain-language overview and summary from the transcript and the posted agenda; check them against the video and the agenda (links are under the fields), edit, and save. The summary is an analysis artifact: it stays on the PC, summaries are searchable, and they feed Ask Claude.
+**Summary tab.** Click **Write summary**. The AI model writes a plain-language overview and summary from the transcript and the posted agenda; check them against the video and the agenda (links are under the fields), edit, and save. The summary is an analysis artifact: it stays on the PC, summaries are searchable, and they feed Ask.
 
-**Minutes tab.** Click **Draft minutes with Claude**. Claude writes the minutes in the Town's own format from the transcript, the agenda, and the Swagit video index, and the draft opens in a markdown editor with a preview. Export it to Word (`.docx`), to text, or to the clipboard. **Compare with published minutes** shows the Town Clerk's final minutes from Destiny beside the draft, once they are posted. The draft is a starting point for the Town Clerk and nothing more: the app never sends it anywhere, and the Clerk's own minutes remain the only official record.
+**Minutes tab.** Click **Draft minutes**. The AI model writes the minutes in the Town's own format from the transcript, the agenda, and the Swagit video index, and the draft opens in a markdown editor with a preview. Export it to Word (`.docx`), to text, or to the clipboard. **Compare with published minutes** shows the Town Clerk's final minutes from Destiny beside the draft, once they are posted. The draft is a starting point for the Town Clerk and nothing more: the app never sends it anywhere, and the Clerk's own minutes remain the only official record.
 
 **Agenda tab.** The posted agenda items with their memo links, the packet PDF, and the video chapters from Swagit, each linking to that point in the recording.
 
-Transcripts are saved in `Documents\Oro Valley Minutes\Transcripts` and minutes drafts in `Documents\Oro Valley Minutes\Minutes` (see "Files" below). A meeting is transcribed once; **Rewrite with Claude** or a new minutes draft reuses the saved transcript and takes a minute or two.
+Transcripts are saved in `Documents\Oro Valley Minutes\Transcripts` and minutes drafts in `Documents\Oro Valley Minutes\Minutes` (see "Files" below). A meeting is transcribed once; **Rewrite summary** or a new minutes draft reuses the saved transcript and takes a minute or two.
 
 ## How a transcript, summary, and minutes draft are made
 
@@ -69,8 +69,8 @@ Transcripts are saved in `Documents\Oro Valley Minutes\Transcripts` and minutes 
 2. **Video.** Each Swagit page (`orovalleyaz.new.swagit.com/videos/<id>`) carries an HLS stream on `archive-stream.granicus.com` (`playlist.m3u8`) and a signed MP4 at `/videos/<id>/download`. The bundled ffmpeg reads the MP4 (falling back to the stream) and keeps only a small mono MP3 (about 30 MB per hour). Deep links to a moment in the video use `/play/<id>/<seconds>`.
 3. **Transcript.** The MP3 goes to Deepgram (Nova-3, speaker separation, with the names in `keyterms.txt`) and is saved as `<Date> <Meeting> Transcript (video N).txt`. Recordings longer than four hours are sent in one-hour parts.
 4. **Agenda and video index.** The posted agenda is read from Destiny; the video index (agenda items with timestamps) is read from the Swagit page. If there is no agenda, the summary and the minutes draft come from the transcript alone and the app says so.
-5. **Summary.** Claude writes the overview and the full summary at a sixth-grade reading level, spelling names from the Council roster on orovalleyaz.gov (Government → Mayor and Council). Claude is told to name a Councilmember only when the transcript makes it clear, and to take item titles, numbers, and amounts from the agenda. The reviewer still checks it.
-6. **Minutes draft.** Claude writes the minutes in the Town's format, shown by a sample of published minutes in `review-app/resources/`, with roll call, each agenda item, motions, movers and seconders, and votes as far as the transcript supports them. Anything it could not confirm is marked for the Clerk. The draft is saved as `<Date> <Meeting> Minutes DRAFT (video N).md`.
+5. **Summary.** The AI model writes the overview and the full summary at a sixth-grade reading level, spelling names from the Council roster on orovalleyaz.gov (Government → Mayor and Council). The AI model is told to name a Councilmember only when the transcript makes it clear, and to take item titles, numbers, and amounts from the agenda. The reviewer still checks it.
+6. **Minutes draft.** The AI model writes the minutes in the Town's format, shown by a sample of published minutes in `review-app/resources/`, with roll call, each agenda item, motions, movers and seconders, and votes as far as the transcript supports them. Anything it could not confirm is marked for the Clerk. The draft is saved as `<Date> <Meeting> Minutes DRAFT (video N).md`.
 
 ## Files
 
@@ -121,5 +121,5 @@ Optional environment overrides:
 ## History
 
 - **2026-11-01 (v1.2):** Removed website publishing (widget, GitHub Pages, GitHub token). The app is a staff analysis tool only. Desktop icon is the Town seal.
-- **2026-10-31 (v1.1):** Reframed as an analysis tool: Search across all transcripts, summaries, and minutes drafts; watched Topics with monthly trends; Ask Claude with timestamped citations; bulk transcription queue; publishing moved under a Website menu. Town-brand restyle, installer icon, start script.
+- **2026-10-31 (v1.1):** Reframed as an analysis tool: Search across all transcripts, summaries, and minutes drafts; watched Topics with monthly trends; Ask with timestamped citations; bulk transcription queue; publishing moved under a Website menu. Town-brand restyle, installer icon, start script.
 - **2026-10-30 (v1.0):** Built from the City of Eloy council widget (v2.0). Video from Swagit, agendas and minutes from Destiny AgendaQuick. Adds Transcript, Minutes, and Agenda tabs; meeting ids are `swagit-<videoId>`.

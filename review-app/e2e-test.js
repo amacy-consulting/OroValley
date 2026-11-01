@@ -1,5 +1,5 @@
 /* End to end through the same pipeline the app uses:
- * Destiny listing -> Swagit video -> audio download -> Deepgram transcript -> Claude summary.
+ * Destiny listing -> Swagit video -> audio download -> Deepgram transcript -> the AI model summary.
  * Nothing is published.
  *
  * Run (PowerShell):

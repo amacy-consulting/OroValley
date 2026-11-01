@@ -1,4 +1,4 @@
-/** Ask Claude to write, or rewrite, a plain-language summary of a meeting for
+/** Ask to write, or rewrite, a plain-language summary of a meeting for
  *  residents from the transcript of the Swagit recording and the posted
  *  agenda. The result is a suggestion only; the reviewer checks and edits it.
  */
@@ -109,7 +109,7 @@ function buildUserPrompt({ clip, draft = {}, transcript, agendaText = "", roster
     .join("\n");
 }
 
-/** Returns { overview, details } suggested by Claude. */
+/** Returns { overview, details } suggested by the AI model. */
 async function writeSummary({ clip, draft, transcript, agendaText, roster }, { apiKey, onProgress, signal } = {}) {
   if (!apiKey) {
     throw new SummaryError("Add the Town's Anthropic API key in Settings to write summaries.", { needsKey: true, keyKind: "anthropic" });
@@ -156,10 +156,10 @@ async function writeSummary({ clip, draft, transcript, agendaText, roster }, { a
 
   if (resp.stop_reason === "refusal") {
     const category = (resp.stop_details && resp.stop_details.category) || "unspecified";
-    throw new SummaryError(`Claude declined to summarize this meeting (automated safety check: ${category}). Write the summary by hand instead.`);
+    throw new SummaryError(`The AI model declined to summarize this meeting (automated safety check: ${category}). Write the summary by hand instead.`);
   }
   if (resp.stop_reason === "max_tokens") {
-    throw new SummaryError("Claude ran out of room before finishing. Try again.");
+    throw new SummaryError("The AI model ran out of room before finishing. Try again.");
   }
 
   const reply = resp.content.filter((b) => b.type === "text").map((b) => b.text).join("");
@@ -167,7 +167,7 @@ async function writeSummary({ clip, draft, transcript, agendaText, roster }, { a
     const parsed = JSON.parse(reply);
     return { overview: String(parsed.overview || "").trim(), details: String(parsed.details || "").trim() };
   } catch {
-    throw new SummaryError("Claude's reply wasn't in the expected format. Try again.");
+    throw new SummaryError("The reply wasn't in the expected format. Try again.");
   }
 }
 

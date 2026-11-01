@@ -1,12 +1,12 @@
 # Oro Valley Council Meeting Dashboard
 
-Town of Oro Valley, Arizona. Electron meeting-analysis app for staff (search, topics, ask-Claude, summaries, minutes drafts). Built from the City of Eloy council widget; the untouched original is in `city-council-widget-main/` for reference only. Never edit it and never commit it.
+Town of Oro Valley, Arizona. Electron meeting-analysis app for staff (search, topics, ask, summaries, minutes drafts). Built from the City of Eloy council widget; the untouched original is in `city-council-widget-main/` for reference only. Never edit it and never commit it.
 
 ## Folder map
 
 - `review-app/main/main.js`, `preload.js` – Electron main process and IPC bridge.
-- `review-app/main/engine/` – the work: Swagit client (video pages, HLS/MP4, video index), Destiny AgendaQuick client (meeting list, agendas, minutes), `media.js` (ffmpeg audio), `transcribe.js` (Deepgram), `transcripts.js` (transcript files), `summarize.js` (Claude summary), `minutes.js` / `minutesPipeline.js` / `minutesStore.js` / `export.js` (minutes drafting and Word export), `corpus.js` (in-memory index of transcripts, summaries, minutes drafts; mtime-cached), `search.js` (query syntax, ranked snippets, speaker stats), `topics.js` (watched keywords, per-month stats), `ask.js` (BM25 passage retrieval + Claude answer with citations), `jobs.js` (sequential bulk queue), `review.js` (review state: meetings, summary drafts, active/hidden), `settings.js` (encrypted keys), `roster.js` (Council names).
-- `review-app/renderer/` – React UI (Vite). `App.jsx` shell with views Meetings / Search / Topics / Ask Claude (`views/`), per-meeting panels in `views/meeting/` (Summary, Transcript, Minutes, Agenda), shared pieces in `components/`. `src/markdown.js` is the safe markdown renderer (minutes preview, Ask answers); `src/dates.js` formats dates.
+- `review-app/main/engine/` – the work: Swagit client (video pages, HLS/MP4, video index), Destiny AgendaQuick client (meeting list, agendas, minutes), `media.js` (ffmpeg audio), `transcribe.js` (Deepgram), `transcripts.js` (transcript files), `summarize.js` (AI summary), `minutes.js` / `minutesPipeline.js` / `minutesStore.js` / `export.js` (minutes drafting and Word export), `corpus.js` (in-memory index of transcripts, summaries, minutes drafts; mtime-cached), `search.js` (query syntax, ranked snippets, speaker stats), `topics.js` (watched keywords, per-month stats), `ask.js` (BM25 passage retrieval + AI answer with citations), `jobs.js` (sequential bulk queue), `review.js` (review state: meetings, summary drafts, active/hidden), `settings.js` (encrypted keys), `roster.js` (Council names).
+- `review-app/renderer/` – React UI (Vite). `App.jsx` shell with views Meetings / Search / Topics / Ask (`views/`), per-meeting panels in `views/meeting/` (Summary, Transcript, Minutes, Agenda), shared pieces in `components/`. `src/markdown.js` is the safe markdown renderer (minutes preview, Ask answers); `src/dates.js` formats dates.
 - `review-app/resources/` – `keyterms.txt` (Deepgram, max 50 lines) and a sample of published minutes for the Town's format.
 - `review-app/test-fixtures/` – saved Swagit and Destiny pages for offline tests.
 
@@ -39,7 +39,8 @@ Env vars: `OV_USER_DATA`, `OV_DOCUMENTS`, `OV_CLIP_ID`, `OV_SCREENSHOT` (+ `OV_S
 
 ## Rules
 
-- Analysis comes first: the user wants search, keyword tracking, and questions across meetings. The summary is an analysis artifact (searchable, feeds Ask Claude), not a publication.
+- Analysis comes first: the user wants search, keyword tracking, and questions across meetings. The summary is an analysis artifact (searchable, feeds Ask), not a publication.
+- The product never names the AI vendor or model in staff-facing text: say "the AI model" or "the app". Only the Settings key label says "Anthropic API key", because staff must know which key to paste.
 - The app publishes nothing anywhere; transcripts, summaries and minutes drafts stay on the staff PC.
 - The minutes draft is a starting point for the Town Clerk, not the official minutes.
 - The repository is public: no keys, tokens, transcripts, or minutes drafts in git.

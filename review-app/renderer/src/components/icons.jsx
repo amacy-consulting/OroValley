@@ -44,7 +44,7 @@ export function Mark({ size = 40, footer = false, alt = "" }) {
   );
 }
 
-/** A four-point sparkle, shown before every action that asks Claude to write.
+/** A four-point sparkle, shown before every action that asks the AI model to write.
  *  Purely decorative; it has no text so button labels stay unchanged. */
 export function Sparkle() {
   return (

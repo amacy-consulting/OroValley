@@ -76,7 +76,7 @@ function sourceOf(clip) {
   };
 }
 
-/** A new draft from a listing entry. The summary starts empty; Claude or the reviewer writes it. */
+/** A new draft from a listing entry. The summary starts empty; the AI model or the reviewer writes it. */
 function toDraft(clip) {
   return {
     id: clipKey(clip.clipId),

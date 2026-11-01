@@ -51,7 +51,7 @@ export function Settings({ settings, onClose, onSaved }) {
       <h3>Writing summaries, minutes and answers</h3>
       {secret("Anthropic API key", "anthropicApiKey", settings.hasAnthropicApiKey, "sk-ant-…")}
       <p className="hint">
-        Claude writes each summary, drafts the minutes, and answers questions from the saved transcripts. Use the
+        The AI model writes each summary, drafts the minutes, and answers questions from the saved transcripts. Use the
         Town's dedicated Console workspace with a monthly spend limit.
         {removeButton("anthropicApiKey", settings.hasAnthropicApiKey, "Remove saved key")}
       </p>

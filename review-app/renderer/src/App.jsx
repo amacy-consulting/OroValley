@@ -13,7 +13,7 @@ const NAV = [
   { key: "meetings", label: "Meetings" },
   { key: "search", label: "Search" },
   { key: "topics", label: "Topics" },
-  { key: "ask", label: "Ask Claude" },
+  { key: "ask", label: "Ask" },
 ];
 
 const NO_JOBS = { running: null, pending: [], done: [] };

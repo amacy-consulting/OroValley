@@ -45,7 +45,7 @@ export function MinutesPanel({ meeting, busy, runJob, onState, setNotice, onDirt
   async function draft() {
     const redraft = Boolean(doc);
     if (redraft && !window.confirm(
-      "Ask Claude to draft these minutes again? Your current text is sent along as the starting point, and the new draft replaces it in the editor. Undo redraft brings your text back."
+      "Draft these minutes again? Your current text is sent along as the starting point, and the new draft replaces it in the editor. Undo redraft brings your text back."
     )) return;
     const result = await runJob("minutes", () => api.draftMinutes(meeting.id, redraft ? text : "", { retranscribe }));
     setRetranscribe(false);
@@ -65,11 +65,11 @@ export function MinutesPanel({ meeting, busy, runJob, onState, setNotice, onDirt
     setChecked({});
     const caveats = [
       result.agendaUsed ? "" : "No agenda was posted, so item titles come from the recording alone.",
-      result.sampleUsed ? "" : "No sample minutes were found, so the format is Claude's best guess.",
+      result.sampleUsed ? "" : "No sample minutes were found, so the format is a best guess.",
     ].filter(Boolean);
     setNotice({
       kind: "ok",
-      text: `Claude's draft minutes are in the editor and saved to Documents\\Oro Valley Minutes. Read the reviewer notes, check the motions and votes against the video, and edit as needed. ${caveats.join(" ")}`.trim(),
+      text: `The draft minutes are in the editor and saved to Documents\\Oro Valley Minutes. Read the reviewer notes, check the motions and votes against the video, and edit as needed. ${caveats.join(" ")}`.trim(),
     });
   }
 
@@ -105,7 +105,7 @@ export function MinutesPanel({ meeting, busy, runJob, onState, setNotice, onDirt
   const draftButton = (primary) => (
     <button className={primary ? "ov-btn ai" : "link-button ai"} onClick={draft} disabled={busy || !meeting.clipId}>
       <Sparkle />
-      {doc ? "Redraft with Claude" : "Draft minutes with Claude"}
+      {doc ? "Redraft minutes" : "Draft minutes"}
     </button>
   );
 
@@ -115,7 +115,7 @@ export function MinutesPanel({ meeting, busy, runJob, onState, setNotice, onDirt
         {loadError && <p className="error">{loadError}</p>}
         <div className="callout stack">
           <p>
-            <strong>No draft minutes yet.</strong> Claude can write a first draft in the Town's minutes format from the
+            <strong>No draft minutes yet.</strong> The app can write a first draft in the Town's minutes format from the
             transcript and the posted agenda, including motions, votes, and who spoke. The first time takes about 5 to
             15 minutes: the app downloads the video from Swagit, transcribes it, reads the agenda, then writes the
             minutes. If a transcript is already on file, it takes a few minutes. The draft is saved in Documents\Oro
@@ -158,10 +158,10 @@ export function MinutesPanel({ meeting, busy, runJob, onState, setNotice, onDirt
       </div>
 
       {doc.notes && doc.notes.length > 0 && (
-        <details className="notes ov-accordion" open role="region" aria-label="Reviewer notes from Claude">
+        <details className="notes ov-accordion" open role="region" aria-label="Reviewer notes">
           <summary className="notes-title ov-accordion-trigger">
             <Sparkle />
-            <strong>Reviewer notes from Claude</strong>
+            <strong>Reviewer notes</strong>
           </summary>
           <div className="ov-accordion-body">
             <p className="hint">Things to check before these minutes are used.</p>

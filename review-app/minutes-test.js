@@ -1,5 +1,5 @@
 /* Minutes engine test: no Electron, API keys, or network needed.
- * Checks the Claude prompt, the Markdown -> text / HTML / Word converters,
+ * Checks the the AI model prompt, the Markdown -> text / HTML / Word converters,
  * and the saved-draft store in a temp folder.
  * Run: node minutes-test.js
  */

@@ -565,7 +565,7 @@ const ITEM_NUMBER = /^(\d{1,3}|[A-Za-z]|[IVXLivxl]{1,6})\.?$/;
  * A Destiny agenda page -> { date, time, title, agendaText, items, packetUrl, amended }.
  * items: [{ number, text, level, memoUrl, heading }]; headings are level 0 with
  * number "", items under them level 1 (level 2 for a sub-item in the next column).
- * agendaText is the indented, readable rendering that is fed to Claude ("" when
+ * agendaText is the indented, readable rendering that is fed to the AI model ("" when
  * the page has no agenda).
  */
 function parseAgendaHtml(html) {

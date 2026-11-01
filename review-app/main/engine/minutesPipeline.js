@@ -1,4 +1,4 @@
-/** Swagit recording -> transcript -> Claude minutes draft -> saved .md
+/** Swagit recording -> transcript -> the AI model minutes draft -> saved .md
  *
  *  Shared by the app (main.js) and the tests. No Electron imports; folders
  *  come in through `dirs`: { output, temp, reference }, like pipeline.js.
@@ -95,8 +95,8 @@ async function draftMinutes({ clip, draft = null, retranscribe = false, keys = {
   const index = Array.isArray(clip.index) ? clip.index : [];
   report(
     draft
-      ? "Claude is revising the minutes draft. This can take several minutes for a long meeting…"
-      : "Claude is drafting the minutes. This can take several minutes for a long meeting…"
+      ? "Revising the minutes draft. This can take several minutes for a long meeting…"
+      : "Drafting the minutes. This can take several minutes for a long meeting…"
   );
   const result = await writeMinutes(
     { clip, agenda, transcript: transcript.body, index, roster, publishedSample: sample.text, draft: draft || "" },

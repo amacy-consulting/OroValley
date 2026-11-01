@@ -4,7 +4,7 @@ import { fieldsOf, hasSummary, savedOn } from "../../util.js";
 import { Sparkle } from "../../components/icons.jsx";
 import { WordCount } from "../../components/ui.jsx";
 
-// Length targets, matching what Claude is asked for.
+// Length targets, matching what the AI model is asked for.
 const OVERVIEW_WORDS = 45;
 const DETAILS_WORDS = 200;
 
@@ -74,13 +74,13 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
       if (result.cancelled) return setNotice({ kind: "ok", text: "Cancelled." });
       return setNotice({ kind: "error", text: result.error, settings: result.needsSettings });
     }
-    // The fields are locked while Claude works, so `fields` is still current here.
+    // The fields are locked while the AI model works, so `fields` is still current here.
     if (!needsSummary) setBeforeRewrite(fields);
     setFields({ ...fields, overview: result.suggestion.overview, details: result.suggestion.details });
     setNotice({
       kind: "ok",
       text:
-        "Claude's summary is in the overview and full summary. Check it against the video and agenda, edit as needed, then save." +
+        "The summary is in the overview and full summary. Check it against the video and agenda, edit as needed, then save." +
         (result.agendaUsed ? "" : " No agenda was posted for this meeting, so item numbers and amounts come from the recording alone."),
     });
   }
@@ -89,7 +89,7 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
     <div className="summary-panel">
       {needsSummary && !busy && (
         <p className="callout">
-          No summary yet. Click <strong>Write summary with Claude</strong> below. The first time takes about 5 to 15
+          No summary yet. Click <strong>Write summary</strong> below. The first time takes about 5 to 15
           minutes: the app downloads the video from Swagit, transcribes it, reads the posted agenda, then writes the
           summary. Leave the window open. If a transcript is already on file, it takes a minute or two.
         </p>
@@ -129,16 +129,16 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
         </label>
         <p className="hint">
           {meeting.transcript
-            ? `Transcript on file (saved ${savedOn(meeting.transcript.savedAt)}). It is reused when Claude writes.`
+            ? `Transcript on file (saved ${savedOn(meeting.transcript.savedAt)}). It is reused when the app writes.`
             : "No transcript yet. One is saved the first time a summary, transcript or minutes are made, then reused."}
         </p>
-        <p className="hint">Saved summaries are searchable from Search and are used when you Ask Claude.</p>
+        <p className="hint">Saved summaries are searchable from Search and are used by Ask.</p>
       </fieldset>
 
       <footer className="editor-actions">
         <button className={needsSummary ? "ov-btn ai" : "link-button ai"} onClick={summarize} disabled={busy}>
           <Sparkle />
-          {needsSummary ? "Write summary with Claude" : "Rewrite with Claude"}
+          {needsSummary ? "Write summary" : "Rewrite summary"}
         </button>
         {meeting.transcript && (
           <label className="inline">

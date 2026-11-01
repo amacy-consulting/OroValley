@@ -331,7 +331,7 @@ async function transcribeMeeting(meeting, { retranscribe = false, signal, report
   };
 }
 
-/** Write one meeting's summary: Swagit video -> transcript -> Claude. `draft` is the reviewer's current text. */
+/** Write one meeting's summary: Swagit video -> transcript -> the AI model. `draft` is the reviewer's current text. */
 async function summarizeMeeting(meeting, { draft, retranscribe = false, signal, report }) {
   if (!meeting.clipId) throw new FriendlyError("This meeting has no Swagit video to summarize.");
   report("Looking up the video on Swagit…");
@@ -352,7 +352,7 @@ async function summarizeMeeting(meeting, { draft, retranscribe = false, signal, 
   };
 }
 
-/** Draft one meeting's minutes: transcript + agenda + the sample minutes -> Claude -> saved markdown. */
+/** Draft one meeting's minutes: transcript + agenda + the sample minutes -> the AI model -> saved markdown. */
 async function draftMeetingMinutes(meeting, { currentMarkdown, retranscribe = false, signal, report }) {
   if (!meeting.clipId) throw new FriendlyError("This meeting has no Swagit video to draft minutes from.");
   report("Looking up the video on Swagit…");
@@ -377,7 +377,7 @@ async function draftMeetingMinutes(meeting, { currentMarkdown, retranscribe = fa
   };
 }
 
-/** Write (or rewrite) one meeting's summary: Swagit video -> transcript -> Claude. */
+/** Write (or rewrite) one meeting's summary: Swagit video -> transcript -> the AI model. */
 ipcMain.handle("meeting:summarize", (_e, id, draft, options) =>
   run(async () => {
     const meeting = meetingFor(id);
@@ -410,7 +410,7 @@ ipcMain.handle("transcript:create", (_e, id, options) =>
   })
 );
 
-/** Draft (or redraft) the minutes: transcript + agenda + the sample minutes -> Claude -> saved markdown. */
+/** Draft (or redraft) the minutes: transcript + agenda + the sample minutes -> the AI model -> saved markdown. */
 ipcMain.handle("minutes:draft", (_e, id, currentMarkdown, options) =>
   run(async () => {
     const meeting = meetingFor(id);
@@ -711,7 +711,7 @@ function writeAsks(list) {
   fs.renameSync(tmp, file);
 }
 
-/** Ask Claude a question across the saved transcripts and summaries. Cancellable like the other long jobs. */
+/** Ask a question across the saved transcripts and summaries. Cancellable like the other long jobs. */
 ipcMain.handle("ask:question", (_e, question, scope) =>
   run(async () => {
     const text = String(question || "").trim();

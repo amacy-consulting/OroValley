@@ -1,4 +1,4 @@
-/** Swagit recording -> transcript -> Claude summary.
+/** Swagit recording -> transcript -> the AI model summary.
  *
  *  Shared by the app (main.js) and e2e-test.js so the test exercises the exact
  *  path the reviewer uses. No Electron imports; folders come in through `dirs`:
@@ -177,7 +177,7 @@ async function summarizeClip({ clip, draft = {}, retranscribe = false, keys = {}
   const roster = await loadCouncilRoster();
   throwIfCancelled(signal);
 
-  report("Claude is writing the summary. This can take a minute or two…");
+  report("Writing the summary. This can take a minute or two…");
   const suggestion = await writeSummary(
     { clip, draft, transcript: transcript.body, agendaText, roster },
     { apiKey: keys.anthropic, onProgress: (t) => report(t, { transient: true }), signal }

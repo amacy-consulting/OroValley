@@ -201,7 +201,7 @@ async function main() {
   const draft = toDraft(LISTING[1]);
   assert.equal(draft.id, "swagit-404722");
   assert.equal(draft.title, "Regular Session");
-  assert.equal(draft.overview, "", "summaries start empty; Claude or the reviewer writes them");
+  assert.equal(draft.overview, "", "summaries start empty; the AI model or the reviewer writes them");
   assert.equal(draft.durationMinutes, 58);
   assert.equal(draft.recordingUrl, "https://orovalleyaz.new.swagit.com/videos/404722");
   assert.deepEqual(

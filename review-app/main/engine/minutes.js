@@ -1,4 +1,4 @@
-/** Ask Claude to draft the official minutes of a Town of Oro Valley meeting in
+/** Ask to draft the official minutes of a Town of Oro Valley meeting in
  *  the Town Clerk's format, from the transcript of the Swagit recording, the
  *  posted agenda, the Swagit video index and the Council roster. The result is
  *  a draft only: the Clerk's staff edit it and export it to Word. Nothing here
@@ -185,7 +185,7 @@ function normalizeNotes(notes) {
 
 /**
  * Draft the minutes. Resolves { minutes, notes }: Markdown in the Town's
- * structure and the reviewer notes Claude attached.
+ * structure and the reviewer notes the AI model attached.
  */
 async function writeMinutes(
   { clip, agenda, transcript, index, roster, publishedSample, draft },
@@ -241,10 +241,10 @@ async function writeMinutes(
 
   if (resp.stop_reason === "refusal") {
     const category = (resp.stop_details && resp.stop_details.category) || "unspecified";
-    throw new SummaryError(`Claude declined to draft minutes for this meeting (automated safety check: ${category}). Draft them by hand instead.`);
+    throw new SummaryError(`The AI model declined to draft minutes for this meeting (automated safety check: ${category}). Draft them by hand instead.`);
   }
   if (resp.stop_reason === "max_tokens") {
-    throw new SummaryError("Claude ran out of room before finishing the minutes. Try again.");
+    throw new SummaryError("The AI model ran out of room before finishing the minutes. Try again.");
   }
 
   const reply = resp.content.filter((b) => b.type === "text").map((b) => b.text).join("");
@@ -252,10 +252,10 @@ async function writeMinutes(
   try {
     parsed = JSON.parse(reply);
   } catch {
-    throw new SummaryError("Claude's reply wasn't in the expected format. Try again.");
+    throw new SummaryError("The reply wasn't in the expected format. Try again.");
   }
   const minutes = String(parsed.minutes || "").replace(/\r\n?/g, "\n").trim();
-  if (!minutes) throw new SummaryError("Claude returned empty minutes. Try again.");
+  if (!minutes) throw new SummaryError("The draft came back empty. Try again.");
   return { minutes, notes: normalizeNotes(parsed.notes) };
 }
 

@@ -1,4 +1,4 @@
-/** Turn a minutes draft (the Markdown subset minutes.js asks Claude for) into
+/** Turn a minutes draft (the Markdown subset minutes.js asks the AI model for) into
  *  a Word document in the Town's layout, plain text, or safe HTML for the
  *  in-app preview.
  *

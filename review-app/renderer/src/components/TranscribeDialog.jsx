@@ -112,8 +112,8 @@ export function TranscribeDialog({ onClose, onQueued, settings, busy }) {
       </div>
       {(summaries || minutes) && (
         <p className="hint">
-          Claude writes {summaries && minutes ? "a summary and a minutes draft" : summaries ? "a summary" : "a minutes draft"} for each
-          picked meeting that lacks one; summaries are saved into the draft for you to review. Claude's cost is billed
+          The AI model writes {summaries && minutes ? "a summary and a minutes draft" : summaries ? "a summary" : "a minutes draft"} for each
+          picked meeting that lacks one; summaries are saved into the draft for you to review. The AI model's cost is billed
           to the Town's Anthropic workspace, roughly a few cents to a few dimes per meeting.
         </p>
       )}

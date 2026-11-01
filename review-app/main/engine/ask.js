@@ -1,6 +1,6 @@
 /** Ask a question across meetings. The question's words are scored against
  *  every transcript turn (BM25-style), the best turns are widened to short
- *  passages with their neighbours, and Claude answers from those passages
+ *  passages with their neighbours, and The AI model answers from those passages
  *  only, citing passage numbers. Nothing here is published; it is a research
  *  aid for Town Clerk staff.
  */
@@ -237,7 +237,7 @@ function retrievePassages(corpus, question, options = {}) {
   return passages;
 }
 
-// ---------- the Claude call ----------
+// ---------- the the AI model call ----------
 
 const SYSTEM_PROMPT = `You answer questions for Town Clerk staff of the Town of Oro Valley, Arizona about the Town's public meetings (Town Council, boards and commissions). Staff use your answers to find things in the record quickly, so accuracy and traceability matter more than completeness or polish.
 
@@ -382,10 +382,10 @@ async function askQuestion({ question, corpus, scope = {}, roster }, { apiKey, o
 
   if (resp.stop_reason === "refusal") {
     const category = (resp.stop_details && resp.stop_details.category) || "unspecified";
-    throw new SummaryError(`Claude declined to answer this question (automated safety check: ${category}). Try rewording it.`);
+    throw new SummaryError(`The AI model declined to answer this question (automated safety check: ${category}). Try rewording it.`);
   }
   if (resp.stop_reason === "max_tokens") {
-    throw new SummaryError("Claude ran out of room before finishing the answer. Try a narrower question.");
+    throw new SummaryError("The AI model ran out of room before finishing the answer. Try a narrower question.");
   }
 
   const reply = resp.content.filter((b) => b.type === "text").map((b) => b.text).join("");
@@ -393,7 +393,7 @@ async function askQuestion({ question, corpus, scope = {}, roster }, { apiKey, o
   try {
     parsed = JSON.parse(reply);
   } catch {
-    throw new SummaryError("Claude's reply wasn't in the expected format. Try again.");
+    throw new SummaryError("The reply wasn't in the expected format. Try again.");
   }
   const byN = new Map(passages.map((p) => [p.n, p]));
   const citations = [];

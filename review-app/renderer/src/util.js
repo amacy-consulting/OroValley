@@ -7,7 +7,7 @@ export const JOB_LABELS = {
   summary: "Writing the summary",
   transcript: "Transcribing",
   minutes: "Drafting the minutes",
-  ask: "Asking Claude",
+  ask: "Finding an answer",
 };
 
 export const KIND_LABELS = { transcript: "Transcript", summary: "Summary", minutes: "Minutes draft" };

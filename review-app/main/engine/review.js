@@ -1,6 +1,6 @@
 /** The review workflow: pull recordings from Swagit and Destiny and keep each
  *  one's status, summary draft and edits on this computer. Nothing here leaves
- *  the staff PC; the summary is an analysis artifact used by Search and Ask Claude.
+ *  the staff PC; the summary is an analysis artifact used by Search and Ask.
  */
 "use strict";
 

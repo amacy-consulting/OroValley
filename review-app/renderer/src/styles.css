@@ -1966,7 +1966,7 @@ mark {
   white-space: nowrap;
 }
 
-/* Ask Claude ------------------------------------------------------------- */
+/* Ask ------------------------------------------------------------- */
 
 .ask-box .ov-field:last-of-type {
   margin-bottom: var(--space-10);

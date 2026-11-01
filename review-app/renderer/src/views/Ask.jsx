@@ -115,7 +115,7 @@ export function Ask({ active, state, busy, setBusy, progress, go, setNotice }) {
   const citeOpen = (c) => go.toMeeting(c.meetingId, { tab: "transcript", sec: c.sec });
 
   return (
-    <section className="view view-ask" aria-label="Ask Claude">
+    <section className="view view-ask" aria-label="Ask">
       <div className="ask-grid">
         <aside className="ask-history ov-quicklinks">
           <p className="ov-quicklinks-title">Recent questions</p>
@@ -194,11 +194,11 @@ export function Ask({ active, state, busy, setBusy, progress, go, setNotice }) {
             </div>
           </div>
 
-          {asking && <Working text={progress || "Asking Claude…"} cancelling={cancelling} onCancel={cancel} />}
+          {asking && <Working text={progress || "Finding an answer…"} cancelling={cancelling} onCancel={cancel} />}
 
           {!asking && !current && (
             <p className="muted ask-empty">
-              Claude reads the saved transcripts and summaries that match your question and answers with numbered
+              The app reads the saved transcripts and summaries that match your question and answers with numbered
               sources. Each source opens the transcript at that moment, so you can check it.
             </p>
           )}

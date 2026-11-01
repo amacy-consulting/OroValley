@@ -63,7 +63,7 @@ contextBridge.exposeInMainWorld("review", {
   topicStats: (id, range) => ipcRenderer.invoke("topics:stats", id, range),
   topicsForMeeting: (id) => ipcRenderer.invoke("topics:forMeeting", id),
 
-  // Ask Claude
+  // Ask
   /** scope: { meetingIds, bodies, from, to } -> { ok, id, askedAt, answer, citations, passagesCount } */
   ask: (question, scope) => ipcRenderer.invoke("ask:question", question, scope),
   askHistory: () => ipcRenderer.invoke("ask:history"),
