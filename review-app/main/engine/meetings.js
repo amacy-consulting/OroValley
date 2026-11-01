@@ -7,7 +7,7 @@ const COUNCIL_KINDS = new Set(["council", "special", "work-session"]);
 const SHORT_RECORDING_SEC = 10 * 60;
 const ID_PREFIX = "swagit-";
 
-/** Meeting id used in the review state and the published file. */
+/** Meeting id used in the review state. */
 function clipKey(clipId) {
   return `${ID_PREFIX}${clipId}`;
 }
@@ -37,7 +37,7 @@ function normalizeRecord(record) {
   return id === record.id ? record : { ...record, id };
 }
 
-/** The "Meeting type" shown on the website. */
+/** The "Meeting type" shown in the dashboard. */
 function meetingKind(clip) {
   switch (clip.kind) {
     case "council":
@@ -90,7 +90,7 @@ function toDraft(clip) {
   };
 }
 
-/** Reasons a reviewer should take a closer look before approving: [{ code, message }].
+/** Reasons a reviewer should take a closer look: [{ code, message }].
  *  Code "low-content" means the recording is hidden automatically. */
 function reviewFlags(clip, listing = []) {
   const flags = [];
@@ -107,44 +107,17 @@ function reviewFlags(clip, listing = []) {
     }
   }
   if (!clip.date) {
-    add("no-date", "The meeting list doesn't show a date for this recording. Enter the meeting date before approving.");
+    add("no-date", "The meeting list doesn't show a date for this recording. Enter the meeting date.");
   }
   // Other real recordings of the same date; automatically hidden tests don't count.
   const sameDay = listing.filter((m) => m.clipId !== clip.clipId && m.date && m.date === clip.date && !m.lowContent);
   if (sameDay.length) {
     add(
       "same-date",
-      `There ${sameDay.length === 1 ? "is another recording" : `are ${sameDay.length} other recordings`} for this date. Publish only the best one.`
+      `There ${sameDay.length === 1 ? "is another recording" : `are ${sameDay.length} other recordings`} for this date. Hide the ones you don't need.`
     );
   }
   return flags;
-}
-
-function httpsOrEmpty(url) {
-  return /^https:\/\//i.test(String(url || "")) ? String(url) : "";
-}
-
-/** The fields the website widget shows. Nothing else is published. */
-function publishedRecord(draft) {
-  return {
-    id: draft.id,
-    date: draft.date,
-    title: draft.title,
-    overview: draft.overview,
-    details: draft.details,
-    durationMinutes: draft.durationMinutes || null,
-    recordingUrl: httpsOrEmpty(draft.recordingUrl),
-  };
-}
-
-function buildPublishedFile(drafts) {
-  return {
-    version: 1,
-    updated: new Date().toISOString(),
-    meetings: drafts
-      .map(publishedRecord)
-      .sort((a, b) => String(b.date || "").localeCompare(String(a.date || ""))),
-  };
 }
 
 module.exports = {
@@ -158,6 +131,4 @@ module.exports = {
   sourceOf,
   toDraft,
   reviewFlags,
-  publishedRecord,
-  buildPublishedFile,
 };

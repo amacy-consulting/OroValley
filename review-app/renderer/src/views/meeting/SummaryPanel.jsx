@@ -1,30 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { latestHtml } from "../../../../../widget/render.js";
-import widgetCss from "../../../../../widget/widget.css?raw";
-import tokensCss from "../../design-system/tokens.css?raw";
-import componentsCss from "../../design-system/components.css?raw";
 import { api } from "../../api.js";
-import { fieldsOf, hasSummary, savedOn, STATUS_LABELS } from "../../util.js";
+import { fieldsOf, hasSummary, savedOn } from "../../util.js";
 import { Sparkle } from "../../components/icons.jsx";
 import { WordCount } from "../../components/ui.jsx";
 
 // Length targets, matching what Claude is asked for.
 const OVERVIEW_WORDS = 45;
 const DETAILS_WORDS = 200;
-
-function Preview({ draft }) {
-  // The same three stylesheets the published widget loads, so the preview matches the website.
-  const srcDoc = `<!doctype html><html><head><meta charset="utf-8"><style>${tokensCss}\n${componentsCss}\n${widgetCss}</style></head>
-    <body><main class="ecw">${latestHtml(draft, { open: true })}</main></body></html>`;
-  return (
-    <iframe
-      className="preview-frame"
-      title="Website preview"
-      sandbox="allow-popups allow-popups-to-escape-sandbox"
-      srcDoc={srcDoc}
-    />
-  );
-}
 
 export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirty }) {
   const [fields, setFields] = useState(() => fieldsOf(meeting.draft));
@@ -34,6 +16,7 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
   const dirty = JSON.stringify(fields) !== JSON.stringify(saved);
   const draft = { ...meeting.draft, ...fields };
   const needsSummary = !hasSummary(fields);
+  const hidden = meeting.status === "hidden";
   const set = (key) => (e) => {
     const value = e.target.value;
     setFields((f) => ({ ...f, [key]: value }));
@@ -41,9 +24,8 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
 
   useEffect(() => onDirty("summary", dirty), [dirty, onDirty]);
 
-  // When the saved draft changes underneath (e.g. "Check for new meetings" adopted
-  // another computer's published edit, or the bulk queue wrote a summary), follow it,
-  // unless the reviewer has edits.
+  // When the saved draft changes underneath (e.g. the bulk queue wrote a summary),
+  // follow it, unless the reviewer has edits.
   const savedJson = JSON.stringify(saved);
   const lastSaved = useRef(savedJson);
   useEffect(() => {
@@ -68,33 +50,16 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
     setNotice({ kind: "ok", text: "Summary saved." });
   }
 
-  async function resolve(choice) {
-    if (choice === "mine" && dirty && !(await persist())) return;
-    const result = await api.resolveConflict(meeting.id, choice);
-    if (!result.ok) return setNotice({ kind: "error", text: result.error });
-    if (choice === "website") setFields(fieldsOf({ ...meeting.draft, ...(meeting.conflict.website || {}) }));
-    onState(result.state);
-    setNotice({
-      kind: "ok",
-      text: choice === "mine" ? "Keeping your version. Publish when you're ready." : "Switched to the version on the website.",
-    });
-  }
-
   async function setStatus(status) {
-    // Approving checks the saved overview and date, so save first. Moving away
-    // from Approved changes the status first, so an empty overview can still be saved.
-    if (status === "approved" && dirty && !(await persist())) return;
     const result = await api.setStatus(meeting.id, status);
     if (!result.ok) return setNotice({ kind: "error", text: result.error });
     onState(result.state);
-    if (status !== "approved" && dirty && !(await persist())) return;
+    if (dirty && !(await persist())) return;
     setBeforeRewrite(null);
-    const done = {
-      approved: "Approved. Use Website › Publish to website when you're ready.",
-      hidden: "Hidden. It won't appear on the website.",
-      review: "Moved back to To review.",
-    };
-    setNotice({ kind: "ok", text: done[status] });
+    setNotice({
+      kind: "ok",
+      text: status === "hidden" ? "Hidden. Find it under the Hidden tab." : "Back under Meetings.",
+    });
   }
 
   async function summarize() {
@@ -115,37 +80,13 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
     setNotice({
       kind: "ok",
       text:
-        "Claude's summary is in the overview and full summary. Check it against the video and agenda, edit as needed, then save or approve." +
+        "Claude's summary is in the overview and full summary. Check it against the video and agenda, edit as needed, then save." +
         (result.agendaUsed ? "" : " No agenda was posted for this meeting, so item numbers and amounts come from the recording alone."),
     });
   }
 
   return (
     <div className="summary-panel">
-      {meeting.conflict && (
-        <div className="conflict" role="alert">
-          <p>
-            <strong>Another computer published a different version of this meeting</strong>
-            {meeting.conflict.website ? "." : ": it was removed from the website."} Choose which one to keep. Nothing
-            publishes until you do.
-          </p>
-          {meeting.conflict.website && (
-            <details>
-              <summary>See the version on the website</summary>
-              <pre>{[meeting.conflict.website.overview, meeting.conflict.website.details].join("\n\n")}</pre>
-            </details>
-          )}
-          <div className="conflict-actions">
-            <button className="ov-btn" onClick={() => resolve("mine")} disabled={busy}>
-              Keep my version
-            </button>
-            <button className="link-button" onClick={() => resolve("website")} disabled={busy}>
-              {meeting.conflict.website ? "Use the website version" : "Accept the removal"}
-            </button>
-          </div>
-        </div>
-      )}
-
       {needsSummary && !busy && (
         <p className="callout">
           No summary yet. Click <strong>Write summary with Claude</strong> below. The first time takes about 5 to 15
@@ -154,49 +95,45 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
         </p>
       )}
 
-      <div className="editor-grid">
-        <fieldset className="fields" disabled={busy}>
+      <fieldset className="fields" disabled={busy}>
+        <div className="field-row">
           <label className="ov-field">
             <span className="ov-label">Meeting date</span>
             <input className="ov-input" type="date" value={fields.date} onChange={set("date")} />
           </label>
-          <label className="ov-field">
+          <label className="ov-field grow">
             <span className="ov-label">Meeting type</span>
             <input className="ov-input" value={fields.title} onChange={set("title")} />
           </label>
-          <label className="ov-field">
-            <span className="ov-label">
-              Overview <span className="muted">(one or two short sentences)</span>
-              <WordCount text={fields.overview} limit={OVERVIEW_WORDS} />
-            </span>
-            <textarea className="ov-input" rows={5} value={fields.overview} onChange={set("overview")} />
-          </label>
-          <label className="ov-field">
-            <span className="ov-label">
-              Full summary <span className="muted">(what was discussed and decided)</span>
-              <WordCount text={fields.details} limit={DETAILS_WORDS} />
-            </span>
-            <textarea className="ov-input tall" rows={16} value={fields.details} onChange={set("details")} />
-          </label>
-          <p className="hint">
-            Formatting: <code>### Heading</code>, <code>- bullet</code>, <code>1. numbered</code>, <code>**bold**</code>
-          </p>
-          <label className="ov-field">
-            <span className="ov-label">Video link</span>
-            <input className="ov-input" value={fields.recordingUrl} onChange={set("recordingUrl")} placeholder="https://" />
-          </label>
-          <p className="hint">
-            {meeting.transcript
-              ? `Transcript on file (saved ${savedOn(meeting.transcript.savedAt)}). It is reused when Claude writes.`
-              : "No transcript yet. One is saved the first time a summary, transcript or minutes are made, then reused."}
-          </p>
-        </fieldset>
-
-        <div className="preview pane">
-          <p className="preview-label pane-head ov-sidebox-title">Preview (as it would appear on the website)</p>
-          <Preview draft={draft} />
         </div>
-      </div>
+        <label className="ov-field">
+          <span className="ov-label">
+            Overview <span className="muted">(one or two short sentences)</span>
+            <WordCount text={fields.overview} limit={OVERVIEW_WORDS} />
+          </span>
+          <textarea className="ov-input" rows={4} value={fields.overview} onChange={set("overview")} />
+        </label>
+        <label className="ov-field">
+          <span className="ov-label">
+            Full summary <span className="muted">(what was discussed and decided)</span>
+            <WordCount text={fields.details} limit={DETAILS_WORDS} />
+          </span>
+          <textarea className="ov-input tall" rows={16} value={fields.details} onChange={set("details")} />
+        </label>
+        <p className="hint">
+          Formatting: <code>### Heading</code>, <code>- bullet</code>, <code>1. numbered</code>, <code>**bold**</code>
+        </p>
+        <label className="ov-field">
+          <span className="ov-label">Video link</span>
+          <input className="ov-input" value={fields.recordingUrl} onChange={set("recordingUrl")} placeholder="https://" />
+        </label>
+        <p className="hint">
+          {meeting.transcript
+            ? `Transcript on file (saved ${savedOn(meeting.transcript.savedAt)}). It is reused when Claude writes.`
+            : "No transcript yet. One is saved the first time a summary, transcript or minutes are made, then reused."}
+        </p>
+        <p className="hint">Saved summaries are searchable from Search and are used when you Ask Claude.</p>
+      </fieldset>
 
       <footer className="editor-actions">
         <button className={needsSummary ? "ov-btn ai" : "link-button ai"} onClick={summarize} disabled={busy}>
@@ -229,26 +166,9 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
           Save changes
         </button>
         <span className="spacer" />
-        <div className="website-actions" role="group" aria-label="Website">
-          <span className="section-label">Website</span>
-          <span className={`pill pill-${meeting.status}`}>{STATUS_LABELS[meeting.status]}</span>
-          {meeting.onWebsite && <span className="pill pill-live">On the website</span>}
-          {meeting.status !== "review" && (
-            <button className="link-button" onClick={() => setStatus("review")} disabled={busy}>
-              Move back to review
-            </button>
-          )}
-          {meeting.status !== "hidden" && (
-            <button className="link-button" onClick={() => setStatus("hidden")} disabled={busy}>
-              Hide
-            </button>
-          )}
-          {(meeting.status !== "approved" || dirty) && (
-            <button className={needsSummary ? "link-button" : "ov-btn"} onClick={() => setStatus("approved")} disabled={busy}>
-              {meeting.status === "approved" ? "Save and keep approved" : "Approve"}
-            </button>
-          )}
-        </div>
+        <button className="link-button" onClick={() => setStatus(hidden ? "active" : "hidden")} disabled={busy}>
+          {hidden ? "Unhide" : "Hide this meeting"}
+        </button>
       </footer>
     </div>
   );

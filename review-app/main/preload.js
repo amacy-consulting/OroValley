@@ -6,8 +6,8 @@ contextBridge.exposeInMainWorld("review", {
   getState: () => ipcRenderer.invoke("state:get"),
   refresh: () => ipcRenderer.invoke("meetings:refresh"),
   save: (id, fields) => ipcRenderer.invoke("meeting:save", id, fields),
+  /** status: "active" | "hidden" */
   setStatus: (id, status) => ipcRenderer.invoke("meeting:status", id, status),
-  resolveConflict: (id, choice) => ipcRenderer.invoke("meeting:resolve", id, choice),
   /** options: { retranscribe } */
   summarize: (id, draft, options) => ipcRenderer.invoke("meeting:summarize", id, draft, options),
   /** Stops whichever long job is running: summary, transcript or minutes. */
@@ -35,7 +35,7 @@ contextBridge.exposeInMainWorld("review", {
   readAgenda: (id) => ipcRenderer.invoke("agenda:read", id),
 
   writeClipboard: (text) => ipcRenderer.invoke("clipboard:write", text),
-  publish: () => ipcRenderer.invoke("publish"),
+  /** update: { anthropicApiKey?, deepgramApiKey? }; "" removes a key. */
   saveSettings: (update) => ipcRenderer.invoke("settings:save", update),
   openExternal: (url) => ipcRenderer.invoke("open:external", url),
   onProgress: (callback) => {

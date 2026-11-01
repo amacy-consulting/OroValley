@@ -3,20 +3,13 @@ import { api } from "../api.js";
 import { Modal } from "./ui.jsx";
 
 export function Settings({ settings, onClose, onSaved }) {
-  const [form, setForm] = useState({
-    githubRepo: settings.githubRepo,
-    githubBranch: settings.githubBranch,
-    widgetUrl: settings.widgetUrl,
-    githubToken: "",
-    anthropicApiKey: "",
-    deepgramApiKey: "",
-  });
+  const [form, setForm] = useState({ anthropicApiKey: "", deepgramApiKey: "" });
   const [error, setError] = useState("");
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
   async function save() {
-    const update = { githubRepo: form.githubRepo, githubBranch: form.githubBranch, widgetUrl: form.widgetUrl };
-    for (const key of ["anthropicApiKey", "deepgramApiKey", "githubToken"]) {
+    const update = {};
+    for (const key of ["anthropicApiKey", "deepgramApiKey"]) {
       if (form[key].trim()) update[key] = form[key];
     }
     const result = await api.saveSettings(update);
@@ -68,26 +61,6 @@ export function Settings({ settings, onClose, onSaved }) {
         transcript is saved in Documents\Oro Valley Minutes and reused.
         {removeButton("deepgramApiKey", settings.hasDeepgramApiKey, "Remove saved key")}
       </p>
-
-      <h3>Publishing summaries to the website</h3>
-      <label className="ov-field">
-        <span className="ov-label">GitHub repository</span>
-        <input className="ov-input" value={form.githubRepo} onChange={set("githubRepo")} placeholder="owner/repo" />
-      </label>
-      <label className="ov-field">
-        <span className="ov-label">Branch</span>
-        <input className="ov-input" value={form.githubBranch} onChange={set("githubBranch")} />
-      </label>
-      {secret("GitHub token", "githubToken", settings.hasGithubToken, "github_pat_…")}
-      <p className="hint">
-        Use a fine-grained token limited to this one repository with <strong>Contents: Read and write</strong>. IT can
-        provide it.
-        {removeButton("githubToken", settings.hasGithubToken, "Remove saved token")}
-      </p>
-      <label className="ov-field">
-        <span className="ov-label">Widget web address</span>
-        <input className="ov-input" value={form.widgetUrl} onChange={set("widgetUrl")} />
-      </label>
       <p className="hint">The Town's keys are encrypted for your Windows account and stay on this computer.</p>
 
       {error && <p className="error">{error}</p>}

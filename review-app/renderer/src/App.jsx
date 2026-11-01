@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api.js";
-import { shortDate, PENDING_LABELS } from "./util.js";
 import { Mark, BannerIcon } from "./components/icons.jsx";
 import { Settings } from "./components/Settings.jsx";
-import { WebsiteMenu } from "./components/WebsiteMenu.jsx";
 import { TranscribeDialog } from "./components/TranscribeDialog.jsx";
 import { QueueDrawer } from "./components/QueueDrawer.jsx";
 import { Meetings } from "./views/Meetings.jsx";
@@ -74,9 +72,7 @@ export default function App() {
   const missing = [
     !settings.hasAnthropicApiKey && "the Anthropic API key",
     !settings.hasDeepgramApiKey && "the Deepgram API key",
-    !settings.hasGithubToken && "the GitHub token",
   ].filter(Boolean);
-  const canPublish = settings.hasGithubToken && state.pendingCount > 0 && !anyBusy;
   const queueTotal = (jobs.done || []).length + (jobs.running ? 1 : 0) + (jobs.pending || []).length;
   const queueAt = (jobs.done || []).length + (jobs.running ? 1 : 0);
 
@@ -87,28 +83,11 @@ export default function App() {
     setBusy(false);
     if (!result.ok) return setNotice({ kind: "error", text: result.error, settings: result.needsSettings });
     setState(result.state);
-    if (result.publishError) return setNotice({ kind: "error", text: result.publishError, settings: true });
     setNotice({
       kind: "ok",
       text: result.added
         ? `Loaded ${result.added} new meeting video${result.added === 1 ? "" : "s"} from Swagit.`
         : "No new meeting videos on Swagit.",
-    });
-  }
-
-  async function publish() {
-    const changes = state.meetings.filter((m) => m.pending);
-    const lines = changes.map((m) => `• ${shortDate(m.draft.date)}: ${PENDING_LABELS[m.pending]}`);
-    if (!window.confirm(`Publish these summary changes to the Town website?\n\n${lines.join("\n")}`)) return;
-    setBusy(true);
-    const result = await api.publish();
-    setBusy(false);
-    if (!result.ok) return setNotice({ kind: "error", text: result.error, settings: result.needsSettings });
-    setState(result.state);
-    setNotice({
-      kind: "ok",
-      text: "Published. The website updates within a few minutes.",
-      link: settings.widgetUrl,
     });
   }
 
@@ -208,13 +187,6 @@ export default function App() {
             <button className="ov-btn ov-btn-compact" onClick={() => setShowTranscribe(true)} disabled={state.meetings.length === 0}>
               Transcribe meetings…
             </button>
-            <WebsiteMenu
-              pendingCount={state.pendingCount}
-              canPublish={canPublish}
-              widgetUrl={settings.widgetUrl}
-              onPublish={publish}
-              onOpen={() => api.openExternal(settings.widgetUrl)}
-            />
             <button className="link-button" onClick={() => setShowSettings(true)}>
               Settings
             </button>
@@ -247,11 +219,6 @@ export default function App() {
             {notice.settings && (
               <button className="link-button" onClick={() => setShowSettings(true)}>
                 Open Settings
-              </button>
-            )}
-            {notice.link && (
-              <button className="link-button" onClick={() => api.openExternal(notice.link)}>
-                View the widget
               </button>
             )}
           </p>

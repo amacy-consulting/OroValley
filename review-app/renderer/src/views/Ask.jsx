@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formatDate } from "../../../../widget/render.js";
-import { renderMarkdown } from "../../../../widget/markdown.js";
+import { formatDate } from "../dates.js";
+import { renderMarkdown } from "../markdown.js";
 import { api } from "../api.js";
 import { playUrlFor } from "../transcript.js";
 import { BODY_OPTIONS, savedAtTime, shortDate } from "../util.js";

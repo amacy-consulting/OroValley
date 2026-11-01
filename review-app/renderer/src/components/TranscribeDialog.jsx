@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { formatDate } from "../../../../widget/render.js";
+import { formatDate } from "../dates.js";
 import { api } from "../api.js";
 import { money, plural } from "../util.js";
 import { Modal } from "./ui.jsx";

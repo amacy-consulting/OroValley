@@ -1,13 +1,7 @@
 /** Small helpers shared by the views. */
-import { formatDate } from "../../../widget/render.js";
+import { formatDate } from "./dates.js";
 
-export const STATUS_LABELS = { review: "Needs review", approved: "Approved", hidden: "Hidden" };
-
-export const PENDING_LABELS = {
-  add: "Approved, not yet on the website",
-  update: "Edited since it was published",
-  remove: "Will be removed from the website",
-};
+export const STATUS_LABELS = { hidden: "Hidden" };
 
 export const JOB_LABELS = {
   summary: "Writing the summary",

@@ -4,7 +4,7 @@
 class FriendlyError extends Error {
   /**
    * needsKey: the screen should send the reviewer to Settings.
-   * keyKind:  "anthropic" | "deepgram" | "github", which key or token to ask for.
+   * keyKind:  "anthropic" | "deepgram", which key to ask for.
    * cancelled: the reviewer pressed Cancel; not an error to display.
    */
   constructor(message, { needsKey = false, keyKind = null, cancelled = false } = {}) {

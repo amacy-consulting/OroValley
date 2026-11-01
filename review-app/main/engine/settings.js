@@ -1,6 +1,6 @@
-/** Per-user settings stored in the app's userData folder. The API keys and the
- *  GitHub token are encrypted with Electron safeStorage (Windows DPAPI), so a
- *  copied settings.json is useless on another account or computer.
+/** Per-user settings stored in the app's userData folder. The API keys are
+ *  encrypted with Electron safeStorage (Windows DPAPI), so a copied
+ *  settings.json is useless on another account or computer.
  */
 "use strict";
 
@@ -8,14 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const { app, safeStorage } = require("electron");
 
-const DEFAULTS = {
-  githubRepo: "amacy-consulting/OroValley",
-  githubBranch: "main",
-  widgetUrl: "https://amacy-consulting.github.io/OroValley/",
-};
-
-const TEXT_FIELDS = ["githubRepo", "githubBranch", "widgetUrl"];
-const SECRET_FIELDS = ["anthropicApiKey", "deepgramApiKey", "githubToken"];
+const SECRET_FIELDS = ["anthropicApiKey", "deepgramApiKey"];
 
 function settingsPath() {
   return path.join(app.getPath("userData"), "settings.json");
@@ -68,7 +61,6 @@ function validateSecret(field, value) {
 function loadSettings() {
   const raw = readRaw();
   const settings = {};
-  for (const field of TEXT_FIELDS) settings[field] = String(raw[field] || DEFAULTS[field]);
   for (const field of SECRET_FIELDS) settings[field] = decrypt(raw[`${field}Encrypted`]);
   return settings;
 }
@@ -81,9 +73,6 @@ function saveSettings(update) {
     if (problem) throw new Error(problem);
   }
   const raw = readRaw();
-  for (const field of TEXT_FIELDS) {
-    if (update[field] !== undefined) raw[field] = String(update[field]).trim();
-  }
   for (const field of SECRET_FIELDS) {
     if (update[field] !== undefined) raw[`${field}Encrypted`] = encrypt(String(update[field]).trim());
   }
@@ -94,12 +83,8 @@ function saveSettings(update) {
 /** What the screens may see: never the secrets themselves. */
 function publicSettings(settings = loadSettings()) {
   return {
-    githubRepo: settings.githubRepo,
-    githubBranch: settings.githubBranch,
-    widgetUrl: settings.widgetUrl,
     hasAnthropicApiKey: Boolean(settings.anthropicApiKey),
     hasDeepgramApiKey: Boolean(settings.deepgramApiKey),
-    hasGithubToken: Boolean(settings.githubToken),
   };
 }
 

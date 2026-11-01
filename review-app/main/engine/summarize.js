@@ -1,6 +1,6 @@
 /** Ask Claude to write, or rewrite, a plain-language summary of a meeting for
  *  residents from the transcript of the Swagit recording and the posted
- *  agenda. The result is a suggestion only; the reviewer edits and approves it.
+ *  agenda. The result is a suggestion only; the reviewer checks and edits it.
  */
 "use strict";
 

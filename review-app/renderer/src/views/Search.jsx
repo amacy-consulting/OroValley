@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { formatDate } from "../../../../widget/render.js";
+import { formatDate } from "../dates.js";
 import { api } from "../api.js";
 import { playUrlFor } from "../transcript.js";
 import { BODY_OPTIONS, TOPIC_COLORS, termsFromQuery, monthLabel, plural } from "../util.js";

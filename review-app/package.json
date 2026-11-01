@@ -2,7 +2,7 @@
   "name": "oro-valley-council-dashboard",
   "productName": "Oro Valley Council Dashboard",
   "version": "1.0.0",
-  "description": "Town of Oro Valley council meeting dashboard: Swagit video, Deepgram transcripts, Claude summaries and draft minutes, reviewed by staff before publishing.",
+  "description": "Town of Oro Valley council meeting dashboard: Swagit video, Deepgram transcripts, Claude summaries and draft minutes, with search, topics and Ask Claude for Town staff. Nothing is published.",
   "main": "main/main.js",
   "author": "Town of Oro Valley",
   "license": "UNLICENSED",

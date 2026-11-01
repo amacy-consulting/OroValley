@@ -69,7 +69,7 @@ function meeting(c, overview, details) {
   return {
     id: `swagit-${c.clipId}`,
     clipId: c.clipId,
-    status: "review",
+    status: "active",
     draft: { id: `swagit-${c.clipId}`, date: c.date, title: c.title, overview, details },
     source: {
       clipId: c.clipId,
@@ -99,7 +99,7 @@ function buildFixtures(root) {
     meeting(CLIPS[1], "", ""),
     meeting(CLIPS[2], "The Council reviewed the budget, including golf and water rates.", ""),
     // A meeting without any files yet.
-    { id: "swagit-401004", clipId: 401004, status: "review", draft: { date: "2026-10-21", title: "Town Council Regular Session" }, source: { body: "Town Council", kind: "council" } },
+    { id: "swagit-401004", clipId: 401004, status: "active", draft: { date: "2026-10-21", title: "Town Council Regular Session" }, source: { body: "Town Council", kind: "council" } },
   ];
   return { tDir, mDir, meetings };
 }

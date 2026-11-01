@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { renderMarkdown } from "../../../../../widget/markdown.js";
+import { renderMarkdown } from "../../markdown.js";
 import { api } from "../../api.js";
 import { baseName, savedAtTime } from "../../util.js";
 import { Sparkle } from "../../components/icons.jsx";

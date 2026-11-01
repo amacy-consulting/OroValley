@@ -4,8 +4,8 @@ review-app/release/
 .env
 .env.*
 
-# Sample data for local previews only; never commit it to the public repo
-samples/
-
 # The City of Eloy app this project was built from (local reference copy only)
 city-council-widget-main/
+
+# Old widget preview data; not used by the app
+samples/

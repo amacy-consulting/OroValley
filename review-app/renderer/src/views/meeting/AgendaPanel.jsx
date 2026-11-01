@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { formatDate } from "../../../../../widget/render.js";
+import { formatDate } from "../../dates.js";
 import { api } from "../../api.js";
 import { playUrlFor, formatSeconds } from "../../transcript.js";
 import { Link } from "../../components/ui.jsx";

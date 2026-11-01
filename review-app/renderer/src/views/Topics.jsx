@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { formatDate } from "../../../../widget/render.js";
+import { formatDate } from "../dates.js";
 import { api } from "../api.js";
 import { TOPIC_COLORS, lastMonths, monthLabel, plural, topicQuery } from "../util.js";
 import { Dot } from "../components/ui.jsx";

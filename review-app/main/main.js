@@ -287,18 +287,14 @@ ipcMain.handle("state:get", () => snapshot());
 ipcMain.handle("meetings:refresh", () =>
   run(async () => {
     const listing = { listMeetings: () => getListing({ force: true }) };
-    const result = await store.refresh({
-      sources: listing,
-      settings: loadSettings(),
-      onProgress: progress,
-    });
+    const result = await store.refresh({ sources: listing, onProgress: progress });
     clipCache.clear();
     return { ...result, state: snapshot() };
   })
 );
 
-/** Quick edits to the review state. Refused while a publish is uploading, so
- *  nothing changes between what was sent and what is marked as published. */
+/** Quick edits to the review state. Refused while a long action runs, so the
+ *  state does not change under a job that is reading it. */
 function edit(change) {
   if (busy) return { ok: false, error: "Wait for the current action to finish, then try again." };
   try {
@@ -311,8 +307,8 @@ function edit(change) {
 }
 
 ipcMain.handle("meeting:save", (_e, id, fields) => edit(() => store.update(id, fields)));
+/** status: "active" | "hidden" */
 ipcMain.handle("meeting:status", (_e, id, status) => edit(() => store.setStatus(id, status)));
-ipcMain.handle("meeting:resolve", (_e, id, choice) => edit(() => store.resolveConflict(id, choice)));
 
 /* ---- The three long jobs, shared by the single-meeting buttons and the bulk queue ---- */
 
@@ -644,22 +640,8 @@ ipcMain.handle("clipboard:write", (_e, text) => {
   return { ok: true };
 });
 
-ipcMain.handle("publish", () =>
-  run(async () => {
-    progress("Publishing to the website…");
-    const result = await store.publish(loadSettings());
-    return { result, state: snapshot() };
-  })
-);
-
-ipcMain.handle("settings:save", (_e, update) =>
-  edit(() => {
-    const before = loadSettings();
-    const after = saveSettings(update);
-    // A different repository or branch is a different website file.
-    if (after.githubRepo !== before.githubRepo || after.githubBranch !== before.githubBranch) store.forgetPublished();
-  })
-);
+/** update: { anthropicApiKey?, deepgramApiKey? }; "" removes a key. */
+ipcMain.handle("settings:save", (_e, update) => edit(() => saveSettings(update && typeof update === "object" ? update : {})));
 
 ipcMain.handle("open:external", (_e, url) => {
   if (/^https:\/\//i.test(String(url))) shell.openExternal(url);

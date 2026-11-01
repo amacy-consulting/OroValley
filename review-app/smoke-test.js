@@ -1,5 +1,5 @@
 /* Engine smoke test: no Electron, API keys, or network needed.
- * Swagit and Destiny pages come from saved fixtures and a fake listing; GitHub is an in-memory fake.
+ * Swagit and Destiny pages come from saved fixtures and a fake listing.
  * Run: npm test   (or: node smoke-test.js)
  * Add live checks (Destiny listing, Swagit video page, stream length, agenda, minutes, roster):
  *   $env:SMOKE_LIVE = "1"; node smoke-test.js
@@ -7,7 +7,6 @@
 "use strict";
 
 const assert = require("assert/strict");
-const crypto = require("crypto");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -17,9 +16,7 @@ const { pathToFileURL } = require("url");
 const sources = require("./main/engine/sources");
 const { toDraft, reviewFlags, clipKey, clipIdFromUrl, normalizeRecord, meetingKind } = require("./main/engine/meetings");
 const { ReviewStore } = require("./main/engine/review");
-const { PublishError } = require("./main/engine/github");
 
-const SETTINGS = { githubRepo: "town/widget", githubBranch: "main", githubToken: "test-token" };
 const fixture = (name) => fs.readFileSync(path.join(__dirname, "test-fixtures", name), "utf-8");
 
 // ---- Fakes -----------------------------------------------------------------
@@ -59,42 +56,21 @@ const fakeSources = {
   },
 };
 
-/** GitHub contents API for one file, in memory. */
-const github = { content: null, sha: null, puts: [] };
-const sha1 = (text) => crypto.createHash("sha1").update(text).digest("hex");
+/** The offline test must never touch the network; the live section restores fetch. */
 const realFetch = global.fetch;
-global.fetch = async (url, options = {}) => {
-  const reply = (status, body) => ({ status, ok: status < 300, json: async () => body });
-  if (String(url).includes("/branches/")) return reply(String(url).endsWith("/branches/main") ? 200 : 404, {});
-  assert.ok(String(url).includes("/repos/town/widget/contents/widget/data/meetings.json"), url);
-  if (!options.method) {
-    if (!String(url).endsWith("?ref=main")) return reply(404, {});
-    if (!github.content) return reply(404, {});
-    return reply(200, { sha: github.sha, content: Buffer.from(github.content).toString("base64") });
-  }
-  const body = JSON.parse(options.body);
-  if (body.branch !== "main") return reply(422, {});
-  if ((body.sha || null) !== github.sha) return reply(409, {});
-  github.content = Buffer.from(body.content, "base64").toString("utf-8");
-  github.sha = sha1(github.content);
-  github.puts.push(body.message);
-  return reply(200, { content: { sha: github.sha }, commit: { html_url: "https://github.com/commit" } });
+global.fetch = async (url) => {
+  throw new Error(`Unexpected network request in the offline smoke test: ${url}`);
 };
-function seedGithub(data) {
-  github.content = JSON.stringify(data, null, 2) + "\n";
-  github.sha = sha1(github.content);
-}
 
-const published = () => JSON.parse(github.content);
 const tempDir = () => fs.mkdtempSync(path.join(os.tmpdir(), "ov-review-"));
 const byId = (store, id) => store.view().meetings.find((m) => m.id === id);
-const refresh = (store, settings = SETTINGS) => store.refresh({ sources: fakeSources, settings });
+const refresh = (store) => store.refresh({ sources: fakeSources });
 
 // ---- Tests -----------------------------------------------------------------
 
 async function main() {
-  // Markdown renderer and date formatting shared with the widget
-  const { renderMarkdown } = await import(pathToFileURL(path.join(__dirname, "..", "widget", "markdown.js")).href);
+  // Markdown renderer (minutes preview, Ask answers) and date formatting used by the screens
+  const { renderMarkdown } = await import(pathToFileURL(path.join(__dirname, "renderer", "src", "markdown.js")).href);
   const html = renderMarkdown("Hi <script>alert(1)</script> **bold**\n\n1. One\n   - nested\n\n2. Two\n\n[x](javascript:alert(1))");
   assert.ok(!html.includes("<script>"), "markdown must escape HTML");
   assert.ok(html.includes("<strong>bold</strong>"));
@@ -102,9 +78,11 @@ async function main() {
   assert.ok(html.includes("<ul><li>nested</li></ul>"), "nested bullets");
   assert.ok(!html.includes('href="javascript'), "only https links become links");
   assert.ok(!renderMarkdown("[x](http://a.example)").includes("<a "), "plain http links are not linked");
-  const { formatDate } = await import(pathToFileURL(path.join(__dirname, "..", "widget", "render.js")).href);
+  const { formatDate } = await import(pathToFileURL(path.join(__dirname, "renderer", "src", "dates.js")).href);
   assert.equal(formatDate("2026-09-14", "short"), "Sep 14, 2026");
+  assert.equal(formatDate("2026-09-14"), "Monday, September 14, 2026");
   assert.equal(formatDate(""), "", "a missing date renders as nothing, not Invalid Date");
+  assert.equal(formatDate("Oct 21"), "", "a malformed date renders as nothing");
   console.log("ok  markdown renderer");
 
   // Transcript viewer rows
@@ -261,113 +239,132 @@ async function main() {
   assert.equal(normalizeRecord(foreign), foreign, "records without a Swagit link are left alone");
   console.log("ok  record ids");
 
-  // First computer: load, write, approve, publish
-  const a = new ReviewStore(tempDir());
+  // Review state: a refresh adds the recordings, with flags, newest first
+  const aDir = tempDir();
+  const a = new ReviewStore(aDir);
+  assert.deepEqual(a.view(), { meetings: [] }, "an empty state has an empty list");
   const firstRun = await refresh(a);
-  assert.equal(firstRun.added, 4);
+  assert.deepEqual(firstRun, { added: 4 });
+  assert.deepEqual(Object.keys(a.view()), ["meetings"], "the view is only the meetings list");
+  assert.deepEqual(a.view().meetings.map((m) => m.id), [M4, M1, M2, M3], "newest first");
+  assert.deepEqual(Object.keys(byId(a, M1)).sort(), ["autoHidden", "clipId", "draft", "flags", "id", "source", "status"]);
   assert.equal(byId(a, M2).status, "hidden", "test recordings are hidden automatically");
-  assert.equal(byId(a, M1).status, "review");
+  assert.equal(byId(a, M2).autoHidden, true);
+  assert.equal(byId(a, M1).status, "active");
+  assert.equal(byId(a, M1).autoHidden, false);
   assert.equal(byId(a, M1).clipId, 404722);
   assert.equal(byId(a, M1).source.minutesSeq, 1140, "the source keeps the Destiny numbers for the dashboard");
-  assert.throws(() => a.setStatus(M1, "approved"), /overview/, "an empty summary can't be approved");
+  assert.deepEqual(byId(a, M1).flags.map((f) => f.code), ["same-date"]);
+  assert.deepEqual(byId(a, M3).flags.map((f) => f.code), ["not-council"]);
+  assert.equal(byId(a, M1).draft.overview, "", "summaries start empty");
+  assert.equal(byId(a, M1).draft.recordingUrl, "https://orovalleyaz.new.swagit.com/videos/404722", "the Swagit link is kept for the screens");
   assert.equal((await refresh(a)).added, 0, "a second refresh adds nothing");
+  console.log("ok  refresh adds meetings");
 
-  a.update(M1, { overview: "The Council approved the consent agenda.", details: "### What the Council decided\n- Routine items (approved 7-0)." });
-  a.setStatus(M1, "approved");
-  assert.equal(byId(a, M1).pending, "add");
-  assert.equal(a.view().pendingCount, 1);
-  await a.publish(SETTINGS);
-  assert.equal(published().meetings.length, 1);
-  assert.deepEqual(Object.keys(published().meetings[0]).sort(), [
-    "date", "details", "durationMinutes", "id", "overview", "recordingUrl", "title",
-  ]);
-  assert.equal(published().meetings[0].id, "swagit-404722");
-  assert.equal(a.view().pendingCount, 0);
-  console.log("ok  approve and publish");
+  // Edits to the summary draft
+  a.update(M1, {
+    overview: "The Council approved the consent agenda.",
+    details: "### What the Council decided\n- Routine items (approved 7-0).",
+    durationMinutes: "61.4",
+  });
+  assert.equal(byId(a, M1).draft.overview, "The Council approved the consent agenda.");
+  assert.match(byId(a, M1).draft.details, /^### What the Council decided/);
+  assert.equal(byId(a, M1).draft.durationMinutes, 61, "durations are whole minutes");
+  a.update(M1, { durationMinutes: "nope" });
+  assert.equal(byId(a, M1).draft.durationMinutes, null);
+  a.update(M1, { title: "Regular Session (part 1)", recordingUrl: "https://example.com/other" });
+  assert.equal(byId(a, M1).draft.title, "Regular Session (part 1)");
+  assert.equal(byId(a, M1).draft.recordingUrl, "https://orovalleyaz.new.swagit.com/videos/404722", "the video link is not editable");
+  assert.equal(byId(a, M1).draft.id, M1, "the id is not editable");
+  a.update(M1, { overview: " " });
+  assert.equal(byId(a, M1).draft.overview, " ", "an empty summary is allowed; nothing depends on it");
+  assert.throws(() => a.update(M1, { date: "Oct 21" }), /date/);
+  a.update(M3, { date: "" });
+  assert.equal(byId(a, M3).draft.date, null, "a cleared date is stored as null");
+  a.update(M3, { date: "2026-10-06" });
+  assert.equal(byId(a, M3).draft.date, "2026-10-06");
+  assert.throws(() => a.update("swagit-1", { overview: "x" }), /Unknown meeting/);
+  await refresh(a);
+  assert.equal(byId(a, M1).draft.title, "Regular Session (part 1)", "a refresh keeps the reviewer's edits");
+  console.log("ok  update");
 
-  // Edits and hiding show as pending changes
-  a.update(M1, { overview: "Edited overview." });
-  assert.equal(byId(a, M1).pending, "update");
+  // Hide and unhide
   a.setStatus(M1, "hidden");
-  assert.equal(byId(a, M1).pending, "remove");
-  a.setStatus(M1, "approved");
-  await a.publish(SETTINGS);
-  assert.equal(published().meetings[0].overview, "Edited overview.");
-  console.log("ok  edit, hide, republish");
-
-  // Second computer picks up what is published, then publishes a change
-  const b = new ReviewStore(tempDir());
-  await refresh(b);
-  assert.equal(byId(b, M1).status, "approved");
-  assert.equal(byId(b, M1).draft.overview, "Edited overview.");
-  assert.equal(b.view().pendingCount, 0);
-  b.update(M4, { overview: "Part two." });
-  b.setStatus(M4, "approved");
-  await b.publish(SETTINGS);
-  assert.equal(published().meetings.length, 2);
-
-  // The first computer must not overwrite that without refreshing first
-  a.update(M1, { overview: "Stale edit." });
-  await assert.rejects(a.publish(SETTINGS), (e) => e instanceof PublishError && /another computer/.test(e.message));
+  assert.equal(byId(a, M1).status, "hidden");
+  assert.equal(byId(a, M1).autoHidden, false, "a reviewer's choice is not an automatic one");
+  a.setStatus(M1, "active");
+  assert.equal(byId(a, M1).status, "active");
+  a.setStatus(M2, "active");
+  assert.equal(byId(a, M2).autoHidden, false, "unhiding clears the automatic flag");
   await refresh(a);
-  assert.equal(byId(a, M4).status, "approved", "adopts the other computer's approval");
-  assert.equal(byId(a, M1).draft.overview, "Stale edit.", "keeps its own unpublished edit");
-  await a.publish(SETTINGS);
-  assert.equal(published().meetings.length, 2);
-  console.log("ok  two computers stay in step");
-
-  // Both computers edit the same meeting: the second to publish must choose
-  await refresh(b);
-  b.update(M1, { overview: "B's version." });
-  a.update(M1, { overview: "A's version." });
-  await b.publish(SETTINGS);
-  await refresh(a);
-  assert.equal(byId(a, M1).conflict.website.overview, "B's version.");
-  assert.equal(byId(a, M1).draft.overview, "A's version.", "a conflict never discards local edits");
-  await assert.rejects(a.publish(SETTINGS), (e) => e instanceof PublishError && /different version/.test(e.message));
-  a.resolveConflict(M1, "website");
-  assert.equal(byId(a, M1).draft.overview, "B's version.");
-  assert.equal(byId(a, M1).pending, null);
-
-  a.update(M1, { overview: "A again." });
-  b.setStatus(M1, "hidden");
-  await b.publish(SETTINGS);
-  await refresh(a);
-  assert.equal(byId(a, M1).conflict.website, null, "the other computer removed it");
-  a.resolveConflict(M1, "mine");
-  await a.publish(SETTINGS);
-  assert.equal(published().meetings.find((m) => m.id === M1).overview, "A again.");
-  console.log("ok  conflicting edits are caught");
+  assert.equal(byId(a, M2).status, "active", "an unhidden test recording stays unhidden after a refresh");
+  assert.deepEqual(byId(a, M2).flags.map((f) => f.code), ["low-content"], "its flag is still shown");
+  for (const bad of ["approved", "review", "published", ""]) {
+    assert.throws(() => a.setStatus(M1, bad), /Unknown status/, `"${bad}" is not a status`);
+  }
+  assert.throws(() => a.setStatus("swagit-1", "hidden"), /Unknown meeting/);
+  const reopened = new ReviewStore(aDir);
+  assert.equal(byId(reopened, M1).draft.title, "Regular Session (part 1)", "edits are saved to disk");
+  assert.equal(byId(reopened, M2).status, "active", "statuses are saved to disk");
+  assert.deepEqual(Object.keys(JSON.parse(fs.readFileSync(path.join(aDir, "review-state.json"), "utf-8"))), ["meetings"]);
+  console.log("ok  hide and unhide");
 
   // Guard rails
-  assert.throws(() => a.update(M1, { overview: " " }), /needs an overview/);
-  assert.throws(() => a.update(M1, { date: "Oct 21" }), /date/);
-  a.update(M3, { overview: "The Commission met.", date: "" });
-  assert.throws(() => a.setStatus(M3, "approved"), /date/, "a meeting without a date can't be approved");
-  a.update(M3, { date: "2026-10-06" });
-  a.setStatus(M3, "approved");
-  const wrongBranch = await refresh(new ReviewStore(tempDir()), { ...SETTINGS, githubBranch: "nope" });
-  assert.match(wrongBranch.publishError, /can't find branch "nope"/);
-  await assert.rejects(new ReviewStore(tempDir()).publish(SETTINGS), /Check for new meetings first/);
   const corruptDir = tempDir();
   fs.writeFileSync(path.join(corruptDir, "review-state.json"), "{not json");
-  new ReviewStore(corruptDir);
+  assert.deepEqual(new ReviewStore(corruptDir).view(), { meetings: [] });
   assert.ok(fs.readdirSync(corruptDir).some((f) => f.startsWith("review-state.json.corrupt-")), "damaged state is kept");
   console.log("ok  guard rails");
 
-  // A published file keyed some other way is matched to its video by the link
-  seedGithub({ version: 1, updated: "2026-10-08T22:33:19.885Z", meetings: [linked, foreign] });
-  const c = new ReviewStore(tempDir());
+  // Old state files (from the publishing days) load with "review" and "approved" folded into "active"
+  const oldDir = tempDir();
+  const oldEntry = (id, status, draft, extra = {}) => ({
+    status,
+    flags: [],
+    draft: { id, date: "2026-10-21", title: "Regular Session", overview: "x", details: "", durationMinutes: 58, recordingUrl: "", ...draft },
+    source: {},
+    localChange: false,
+    ...extra,
+  });
+  fs.writeFileSync(
+    path.join(oldDir, "review-state.json"),
+    JSON.stringify({
+      meetings: {
+        [M1]: oldEntry(M1, "approved", { overview: "Approved before.", recordingUrl: "https://orovalleyaz.new.swagit.com/videos/404722" }, {
+          localChange: true,
+          base: { id: M1, overview: "older" },
+          conflict: { website: { id: M1, overview: "theirs" } },
+        }),
+        [M4]: oldEntry(M4, "review", { recordingUrl: "https://orovalleyaz.new.swagit.com/videos/404723" }),
+        [M2]: oldEntry(M2, "hidden", { date: "2026-10-20" }, { autoHidden: true }),
+        "some-other-id": { status: "approved", flags: [], draft: linked, source: {} },
+        abc: { status: "approved", flags: [], draft: foreign, source: {} },
+        broken: { status: "approved" },
+      },
+      published: { sha: "abc", checkedAt: "2026-10-08T22:33:19.885Z", data: { version: 1, meetings: [] } },
+    })
+  );
+  const c = new ReviewStore(oldDir);
+  assert.equal(byId(c, M1).status, "active", "approved becomes active");
+  assert.equal(byId(c, M1).draft.overview, "Approved before.", "the summary is kept");
+  assert.equal(byId(c, M4).status, "active", "review becomes active");
+  assert.equal(byId(c, M2).status, "hidden", "hidden stays hidden");
+  assert.equal(byId(c, M2).autoHidden, true);
+  assert.equal(byId(c, "some-other-id"), undefined, "a record keyed some other way is matched to its video by the link");
+  assert.equal(byId(c, "abc").status, "active", "a record with no Swagit link is kept as-is");
+  assert.equal(byId(c, "abc").clipId, null);
+  assert.equal(byId(c, "broken"), undefined, "an entry without a draft is dropped");
+  assert.equal(c.view().meetings.length, 4, "M1 and the linked record are one meeting");
+  assert.deepEqual(Object.keys(byId(c, M1)).sort(), ["autoHidden", "clipId", "draft", "flags", "id", "source", "status"], "no publishing leftovers in the view");
   await refresh(c);
-  assert.equal(byId(c, "some-other-id"), undefined, "the foreign id is gone");
-  const migrated = byId(c, M1);
-  assert.equal(migrated.status, "approved");
-  assert.equal(migrated.draft.overview, "x");
-  assert.equal(migrated.pending, null, "nothing to publish until something changes");
-  assert.equal(migrated.source.clipId, 404722, "picks up the listing details");
-  assert.equal(byId(c, "abc").status, "approved", "a record with no Swagit link is kept as-is");
+  assert.equal(byId(c, M1).source.clipId, 404722, "picks up the listing details");
+  assert.equal(byId(c, M1).status, "active");
   assert.equal(c.view().meetings.length, 5, "4 recordings + 1 foreign record, no duplicates");
-  console.log("ok  published records match the listing");
+  const savedState = JSON.parse(fs.readFileSync(path.join(oldDir, "review-state.json"), "utf-8"));
+  assert.deepEqual(Object.keys(savedState), ["meetings"], "the published file bookkeeping is gone once saved");
+  assert.deepEqual(Object.keys(savedState.meetings[M1]).sort(), ["autoHidden", "draft", "flags", "source", "status"]);
+  assert.ok(!Object.values(savedState.meetings).some((e) => "review" === e.status || "approved" === e.status));
+  console.log("ok  old statuses migrate to active");
 
   // Transcripts: Deepgram formatting, files, keyterms
   const { formatTranscript, buildUrl, loadKeyterms } = require("./main/engine/transcribe");
@@ -500,7 +497,7 @@ async function main() {
     console.log("ok  live Swagit, Destiny and roster");
   }
 
-  console.log(`\nSMOKE TEST PASSED (${github.puts.length} publishes: ${github.puts.join(" | ")})`);
+  console.log("\nSMOKE TEST PASSED");
 }
 
 main().catch((e) => {

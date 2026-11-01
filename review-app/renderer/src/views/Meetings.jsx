@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { formatDate } from "../../../../widget/render.js";
+import { formatDate } from "../dates.js";
 import { api } from "../api.js";
-import { shortDate, STATUS_LABELS, PENDING_LABELS, JOB_LABELS, topicQuery } from "../util.js";
+import { shortDate, JOB_LABELS, topicQuery } from "../util.js";
 import { Mark, SearchIcon } from "../components/icons.jsx";
 import { Link, Working, Dot } from "../components/ui.jsx";
 import { SummaryPanel } from "./meeting/SummaryPanel.jsx";
@@ -10,8 +10,7 @@ import { MinutesPanel } from "./meeting/MinutesPanel.jsx";
 import { AgendaPanel } from "./meeting/AgendaPanel.jsx";
 
 const TABS = [
-  { status: "review", label: "To review" },
-  { status: "approved", label: "Approved" },
+  { status: "active", label: "Meetings" },
   { status: "hidden", label: "Hidden" },
 ];
 
@@ -131,10 +130,11 @@ function MeetingView({ meeting, onState, setNotice, busy, setBusy, onDirty, prog
             </p>
           )}
         </div>
-        <div className="head-right">
-          <span className={`pill pill-${meeting.status}`}>{STATUS_LABELS[meeting.status]}</span>
-          {meeting.onWebsite && <span className="pill pill-live">On the website</span>}
-        </div>
+        {meeting.status === "hidden" && (
+          <div className="head-right">
+            <span className="ov-tag tag-hidden">Hidden</span>
+          </div>
+        )}
       </header>
 
       {meeting.flags.length > 0 && (
@@ -143,15 +143,6 @@ function MeetingView({ meeting, onState, setNotice, busy, setBusy, onDirty, prog
             <li key={f.code}>{f.message}</li>
           ))}
         </ul>
-      )}
-
-      {meeting.conflict && view !== "summary" && (
-        <p className="callout callout-error" role="alert">
-          Another computer published a different version of this meeting's summary.{" "}
-          <button className="link-button" onClick={() => setView("summary")}>
-            Open the Summary tab to choose which one to keep.
-          </button>
-        </p>
       )}
 
       {job && (
@@ -206,7 +197,7 @@ function MeetingView({ meeting, onState, setNotice, busy, setBusy, onDirty, prog
 /* ------------------------------------------------------------ Meetings view */
 
 export function Meetings({ state, selectedId, onSelect, onState, setNotice, busy, setBusy, onDirty, progress, intent, go, topicsVersion }) {
-  const [tab, setTab] = useState("review");
+  const [tab, setTab] = useState("active");
   const [query, setQuery] = useState("");
 
   const byTab = (status) => state.meetings.filter((m) => m.status === status);
@@ -274,9 +265,7 @@ export function Meetings({ state, selectedId, onSelect, onState, setNotice, busy
                   <span className="meeting-title">{src.title || m.draft.title}</span>
                   {meta && <span className="meeting-meta">{meta}</span>}
                   <span className="meeting-badges">
-                    {m.conflict && <span className="badge badge-conflict">Choose a version</span>}
                     {m.flags.length > 0 && !m.autoHidden && <span className="badge badge-warn">Check</span>}
-                    {m.pending && <span className="badge badge-pending">{PENDING_LABELS[m.pending]}</span>}
                     {m.draft.overview && <span className="badge badge-doc">Summary</span>}
                     {m.transcript && <span className="badge badge-doc">Transcript</span>}
                     {m.minutes && <span className="badge badge-doc">Minutes draft</span>}
