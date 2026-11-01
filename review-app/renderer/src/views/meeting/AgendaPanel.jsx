@@ -38,7 +38,7 @@ export function AgendaPanel({ meeting, active }) {
           The agenda comes from the Town's agenda system; the chapters come from the Swagit video. Click a time to
           watch that item.
         </p>
-        <button onClick={load} disabled={loading}>
+        <button className="link-button" onClick={load} disabled={loading}>
           {loading ? "Loading…" : "Reload"}
         </button>
       </div>
@@ -46,7 +46,7 @@ export function AgendaPanel({ meeting, active }) {
       {loading && !data && <p className="muted">Loading the posted agenda…</p>}
 
       <div className="agenda-grid">
-        <section aria-label="Posted agenda">
+        <section aria-label="Posted agenda" className="ov-prose">
           <h3>Posted agenda</h3>
           {data && !agenda && (
             <p className="muted">
@@ -100,8 +100,9 @@ export function AgendaPanel({ meeting, active }) {
           )}
         </section>
 
-        <section aria-label="Video chapters">
-          <h3>Video chapters</h3>
+        <section aria-label="Video chapters" className="ov-sidebox">
+          <h3 className="ov-sidebox-title">Video chapters</h3>
+          <div className="ov-sidebox-content">
           {data && chapters.length === 0 && (
             <p className="muted">
               Swagit has no chapter list for this video yet.
@@ -125,6 +126,7 @@ export function AgendaPanel({ meeting, active }) {
               ))}
             </ul>
           )}
+          </div>
         </section>
       </div>
     </div>

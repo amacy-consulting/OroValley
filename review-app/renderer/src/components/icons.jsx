@@ -8,10 +8,22 @@ const SEAL_URL = sealModules["../assets/town-seal.png"] || null;
 
 /** The Town mark: the official seal when present, otherwise an original badge in the
  *  brand colours (navy sky, gold sun, blue Santa Catalina silhouette, white horizon). */
-export function Mark({ size = 40 }) {
+export function Mark({ size = 40, footer = false, alt = "" }) {
   const clip = `mark-clip-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   if (SEAL_URL) {
-    return <img className="mark mark-seal" src={SEAL_URL} width={size} height={size} alt="" aria-hidden="true" />;
+    // The seal is 180 x 173; keep its proportions at every size.
+    const height = Math.round((size * 173) / 180);
+    const label = alt || (footer ? "Town of Oro Valley Seal" : "");
+    return (
+      <img
+        className={footer ? "mark mark-seal ov-footer-seal" : "mark mark-seal"}
+        src={SEAL_URL}
+        width={size}
+        height={height}
+        alt={label}
+        aria-hidden={label ? undefined : "true"}
+      />
+    );
   }
   return (
     <svg className="mark" width={size} height={size} viewBox="0 0 48 48" aria-hidden="true" focusable="false">

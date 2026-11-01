@@ -11,7 +11,7 @@ export function WordCount({ text, limit }) {
   );
 }
 
-export function Link({ url, children, className = "link-button" }) {
+export function Link({ url, children, className = "link-button ov-link" }) {
   return (
     <button className={className} onClick={() => api.openExternal(url)}>
       {children}
@@ -90,7 +90,9 @@ export function Drawer({ title, subtitle, onClose, children, actions, wide }) {
         </div>
         <div className="row">
           {actions}
-          <button onClick={onClose}>Close</button>
+          <button className="link-button" onClick={onClose}>
+            Close
+          </button>
         </div>
       </header>
       <div className="drawer-body">{children}</div>
@@ -105,7 +107,7 @@ export function Modal({ title, titleId, onClose, children, wide }) {
   useInitialFocus(ref);
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby={titleId}>
-      <div className={wide ? "modal modal-wide" : "modal"} ref={ref}>
+      <div className={wide ? "modal modal-wide ov-prose" : "modal ov-prose"} ref={ref}>
         <h2 id={titleId}>{title}</h2>
         {children}
       </div>
@@ -124,7 +126,7 @@ export function Working({ text, cancelling, onCancel }) {
         <span className="spinner" aria-hidden="true" />
         <span className="text">{cancelling ? "Cancelling…" : text}</span>
         {onCancel && (
-          <button onClick={onCancel} disabled={cancelling}>
+          <button className="link-button" onClick={onCancel} disabled={cancelling}>
             Cancel
           </button>
         )}

@@ -48,7 +48,7 @@ export function WebsiteMenu({ pendingCount, canPublish, widgetUrl, onPublish, on
   return (
     <div className="menu-wrap" ref={wrap}>
       <button
-        className={pendingCount ? "menu-button has-pending" : "menu-button"}
+        className={pendingCount ? "menu-button link-button has-pending" : "menu-button link-button"}
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
@@ -61,7 +61,7 @@ export function WebsiteMenu({ pendingCount, canPublish, widgetUrl, onPublish, on
       </button>
       {open && (
         <div className="menu" role="menu" aria-label="Website" onKeyDown={onMenuKey}>
-          <button role="menuitem" className={canPublish ? "menu-item primary" : "menu-item"} onClick={pick(onPublish)} disabled={!canPublish}>
+          <button role="menuitem" className={canPublish ? "menu-item ov-btn ov-btn-compact" : "menu-item"} onClick={pick(onPublish)} disabled={!canPublish}>
             Publish to website{pendingCount ? ` (${pendingCount})` : ""}
           </button>
           <button role="menuitem" className="menu-item" onClick={pick(onOpen)} disabled={!widgetUrl}>

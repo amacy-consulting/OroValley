@@ -105,7 +105,7 @@ export function TranscriptPanel({ meeting, active, busy, runJob, onState, setNot
             Valley Minutes\Transcripts, reused by every other step, and searchable from the Search view.
           </p>
           <div className="row">
-            <button className="primary" onClick={() => transcribe(false)} disabled={busy || !meeting.clipId}>
+            <button className="ov-btn" onClick={() => transcribe(false)} disabled={busy || !meeting.clipId}>
               Transcribe now
             </button>
             {!meeting.clipId && <span className="muted">This meeting has no Swagit video.</span>}
@@ -126,11 +126,11 @@ export function TranscriptPanel({ meeting, active, busy, runJob, onState, setNot
       {doc && (
         <>
           <div className="transcript-toolbar">
-            <div className="search-field search">
-              <SearchIcon />
+            <div className="ov-field search">
               <input
+                className="ov-input"
                 type="search"
-                placeholder="Search this transcript…"
+                placeholder="Search this transcript"
                 aria-label="Search this transcript"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -148,17 +148,26 @@ export function TranscriptPanel({ meeting, active, busy, runJob, onState, setNot
               </button>
             )}
             <span className="spacer" />
-            {clipId && <button onClick={() => watchAt(0)}>Watch on Swagit</button>}
-            <button onClick={() => api.openTranscript(meeting.id)}>Open in Notepad</button>
-            <button onClick={() => api.showTranscriptInFolder(meeting.id)}>Show in folder</button>
-            <button onClick={() => transcribe(true)} disabled={busy}>
+            {clipId && (
+              <button className="link-button" onClick={() => watchAt(0)}>
+                Watch on Swagit
+              </button>
+            )}
+            <button className="link-button" onClick={() => api.openTranscript(meeting.id)}>
+              Open in Notepad
+            </button>
+            <button className="link-button" onClick={() => api.showTranscriptInFolder(meeting.id)}>
+              Show in folder
+            </button>
+            <button className="link-button" onClick={() => transcribe(true)} disabled={busy}>
               Transcribe again
             </button>
           </div>
 
           {speakers.length > 0 && (
-            <div className="who-spoke" role="group" aria-label="Who spoke">
-              <span className="section-label">Who spoke</span>
+            <div className="who-spoke ov-sidebox" role="group" aria-label="Who spoke">
+              <p className="ov-sidebox-title">Who spoke</p>
+              <div className="ov-sidebox-content">
               {speakers.map((sp) => {
                 const share = totalTalk ? Math.round((100 * (Number(sp.seconds) || 0)) / totalTalk) : 0;
                 const on = speaker === sp.speaker;
@@ -180,12 +189,13 @@ export function TranscriptPanel({ meeting, active, busy, runJob, onState, setNot
                   Show everyone
                 </button>
               )}
+              </div>
             </div>
           )}
 
-          <details className="transcript-details">
-            <summary>About this transcript</summary>
-            <div className="transcript-header">
+          <details className="transcript-details ov-sidebox">
+            <summary className="ov-sidebox-title">About this transcript</summary>
+            <div className="transcript-header ov-sidebox-content">
               {doc.header.map((line, i) => (
                 <div key={i}>{line}</div>
               ))}

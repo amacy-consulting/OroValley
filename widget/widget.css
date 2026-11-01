@@ -1,20 +1,8 @@
 /* Town of Oro Valley Town Council meeting summaries widget.
-   Colors, type and shapes follow the Oro Valley Design System (taken from orovalleyaz.gov),
-   so the widget reads as part of the Town page around it. Text pairs meet WCAG AA (4.5:1). */
-:root {
-  --surface: #ffffff;
-  --surface-muted: #f6f6f6;
-  --ink: #002927;
-  --charcoal: #3d3b38;
-  --blue: #236298;
-  --blue-hover: #3271a7;
-  --visited: #ad488b;
-  --gold: #f7b917;
-  --line-strong: #cbcbcb;
-  --radius-button: 4px;
-  --radius-card: 8px;
-  --font-sans: "Source Sans Pro", "Source Sans 3", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-}
+   Built on the Oro Valley Design System: design-system/tokens.css and
+   design-system/components.css load first (see index.html) and supply the colours,
+   type, the listing card, the gold button, the accordion and the footer rule.
+   This file only lays those pieces out for the widget. */
 
 * {
   box-sizing: border-box;
@@ -24,22 +12,19 @@ html,
 body {
   margin: 0;
   background: var(--surface);
-  color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.5;
 }
 
 .ecw {
   max-width: 880px;
   margin: 0 auto;
-  padding: 16px;
+  padding: var(--space-20) var(--space-15) var(--space-10);
+  color: var(--ink);
 }
 
-/* Links as on the Town site: charcoal and underlined, then blue without the underline */
 .ecw a {
   color: var(--charcoal);
   text-decoration: underline;
+  transition: color 300ms ease-out;
 }
 
 .ecw a:visited {
@@ -52,10 +37,10 @@ body {
   text-decoration: none;
 }
 
-.ecw :focus-visible {
-  outline: 2px solid var(--blue);
-  outline-offset: 2px;
-  border-radius: 4px;
+.ecw a:focus-visible,
+.ecw summary:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--focus-ring);
 }
 
 .ecw-sr {
@@ -68,110 +53,105 @@ body {
 }
 
 .ecw-status {
-  margin: 4px 0 20px;
+  margin: 4px 0 var(--space-20);
   color: var(--charcoal);
 }
 
-/* Latest meeting: a flat grey box, like the side boxes on Town pages */
-.ecw-latest {
-  padding: 20px 25px;
-  background: var(--surface-muted);
-  border-radius: var(--radius-card);
+/* Latest meeting: the system's listing card */
+.ecw-latest.ov-listing {
+  padding-bottom: var(--space-5);
 }
 
 .ecw-eyebrow {
   margin: 0;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  padding: var(--space-20) var(--space-20) 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
   text-transform: uppercase;
   color: var(--charcoal);
 }
 
-.ecw-date {
-  margin: 4px 0 0;
-  font-size: 1.25rem;
-  line-height: 1.5;
+.ecw-latest .ecw-date {
+  margin: 0;
+  padding: var(--space-5) var(--space-20) 0;
+  font-size: 24px;
+  line-height: 36px;
   font-weight: 700;
   color: var(--charcoal);
 }
 
+.ecw-latest .ecw-meta {
+  margin: 0 0 var(--space-10);
+  padding: 0 var(--space-20);
+}
+
+.ecw-latest .ecw-overview,
+.ecw-latest .ecw-full,
+.ecw-latest .ecw-actions {
+  padding: 0 var(--space-20);
+}
+
 .ecw-meta {
-  margin: 2px 0 10px;
+  margin: 0 0 var(--space-10);
   color: var(--charcoal);
-  font-size: 0.92rem;
 }
 
 .ecw-overview p {
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-10);
 }
 
-/* Expandable full summary */
+/* Expandable full summary: a text link that opens the rest */
 .ecw-full {
-  margin: 4px 0 8px;
-}
-
-.ecw-full > summary,
-.ecw-row > summary {
-  cursor: pointer;
-  list-style: none;
-}
-
-.ecw-full > summary::-webkit-details-marker,
-.ecw-row > summary::-webkit-details-marker {
-  display: none;
+  margin: 4px 0 var(--space-10);
 }
 
 .ecw-full > summary {
   display: inline-block;
-  color: var(--blue);
+  color: var(--charcoal);
   font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  list-style: none;
+}
+
+.ecw-full > summary::-webkit-details-marker {
+  display: none;
 }
 
 .ecw-full > summary:hover {
-  text-decoration: underline;
+  color: var(--blue-hover);
+  text-decoration: none;
 }
 
-.ecw-full > summary::before,
-.ecw-row > summary::before {
-  content: "▸";
-  display: inline-block;
-  width: 1em;
-  transition: transform 0.15s ease;
-}
-
-.ecw-full[open] > summary::before,
-.ecw-row[open] > summary::before {
-  transform: rotate(90deg);
+.ecw-full .ecw-md {
+  margin-top: var(--space-10);
+  padding-top: var(--space-10);
+  border-top: var(--border-hairline) solid var(--line-strong);
 }
 
 .ecw-md {
   overflow-wrap: anywhere;
 }
 
-.ecw-full .ecw-md {
-  margin-top: 8px;
-  padding-top: 4px;
-  border-top: 1px solid var(--line-strong);
-}
-
 .ecw-md h3,
 .ecw-md h4,
 .ecw-md h5,
 .ecw-md h6 {
-  margin: 14px 0 6px;
-  font-size: 1rem;
+  margin: var(--space-15) 0 var(--space-5);
+  font-size: 18px;
+  line-height: 27px;
   font-weight: 700;
   color: var(--charcoal);
 }
 
 .ecw-md p {
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-10);
 }
 
 .ecw-md ul,
 .ecw-md ol {
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-10);
   padding-left: 1.4em;
 }
 
@@ -180,39 +160,28 @@ body {
 }
 
 .ecw-actions {
-  margin: 8px 0 0;
+  margin: var(--space-5) 0 0;
+}
+
+.ecw-actions .ov-btn {
+  margin: var(--space-5) 0 var(--space-15);
+}
+
+.ecw-actions .ov-btn,
+.ecw-actions .ov-btn:visited {
+  color: var(--charcoal);
 }
 
 .ecw-link {
   font-weight: 600;
-  text-underline-offset: 2px;
 }
 
-/* The latest meeting's video link is the call to action: a gold button, as on Town pages */
-.ecw-latest .ecw-actions .ecw-link {
-  display: inline-block;
-  margin-top: 4px;
-  padding: 15px 20px;
-  font-size: 1.125rem;
-  font-weight: 700;
-  line-height: 28px;
-  color: var(--charcoal);
-  background: var(--gold);
-  border-radius: var(--radius-button);
-  text-decoration: none;
-}
-
-.ecw-latest .ecw-actions .ecw-link:hover,
-.ecw-latest .ecw-actions .ecw-link:focus-visible {
-  color: var(--charcoal);
-  text-decoration: underline;
-}
-
-/* Earlier meetings */
+/* Earlier meetings: the system's accordion */
 .ecw-section-title {
-  margin: 22px 0 6px;
-  font-size: 1.25rem;
-  font-weight: 600;
+  margin: var(--space-10) 0 var(--space-10);
+  font-size: 24px;
+  line-height: 36px;
+  font-weight: 700;
   color: var(--charcoal);
 }
 
@@ -220,63 +189,60 @@ body {
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--line-strong);
-}
-
-.ecw-list > li {
-  border-bottom: 1px solid var(--line-strong);
 }
 
 .ecw-row > summary {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 12px;
-  padding: 12px 4px;
-  color: var(--charcoal);
+  gap: 4px var(--space-12);
 }
 
-.ecw-row > summary:hover {
-  background: var(--surface-muted);
+.ecw-row > summary::-webkit-details-marker {
+  display: none;
 }
 
 .ecw-row-date {
-  font-weight: 600;
   min-width: 8.5em;
 }
 
-.ecw-row-body {
-  padding: 0 4px 14px 1.25em;
+.ecw-row-title {
+  font-weight: 400;
 }
 
-/* Footer */
+/* Footer: the Town's bottom row, with its 3px blue rule */
 .ecw-footer {
-  margin-top: 20px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line-strong);
-  color: var(--charcoal);
-  font-size: 0.85rem;
+  margin-top: var(--space-25);
+}
+
+.ecw-footer .ov-footer-bottom {
+  display: block;
+  padding: var(--space-15) 0 0;
+  font-size: 14px;
+  line-height: 21px;
 }
 
 .ecw-footer p {
   margin: 0 0 6px;
+  color: var(--charcoal);
+}
+
+.ecw-footer .ov-footer-bottom a {
+  text-decoration: underline;
 }
 
 @media (max-width: 480px) {
   .ecw {
-    padding: 12px;
+    padding: var(--space-15) var(--space-10) var(--space-10);
   }
-  .ecw-latest {
-    padding: 15px 20px;
-  }
-  .ecw-date {
-    font-size: 1.15rem;
+  .ecw-latest .ecw-date {
+    font-size: 20px;
+    line-height: 30px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ecw-full > summary::before,
-  .ecw-row > summary::before {
+  .ecw a {
     transition: none;
   }
 }

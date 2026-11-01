@@ -117,8 +117,8 @@ export function Ask({ active, state, busy, setBusy, progress, go, setNotice }) {
   return (
     <section className="view view-ask" aria-label="Ask Claude">
       <div className="ask-grid">
-        <aside className="ask-history pane">
-          <p className="pane-head">Recent questions</p>
+        <aside className="ask-history ov-quicklinks">
+          <p className="ov-quicklinks-title">Recent questions</p>
           {history.length === 0 && <p className="muted pad">Questions you ask are kept here, with their answers.</p>}
           <ul className="history-rows">
             {history.map((a) => (
@@ -140,44 +140,52 @@ export function Ask({ active, state, busy, setBusy, progress, go, setNotice }) {
         <div className="ask-main">
           <div className="pane ask-box">
             <div className="pane-body">
-              <label htmlFor="ask-question">Question</label>
-              <textarea
-                id="ask-question"
-                ref={textareaRef}
-                rows={3}
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                onKeyDown={onKeyDown}
-                placeholder="What has the Council said about the Naranja Park bond? When did the water rate study come up?"
-                disabled={busy}
-              />
-              <div className="ask-scope" role="radiogroup" aria-label="Which meetings to look through">
-                {SCOPES.map((s) => (
-                  <label key={s.key} className="inline">
-                    <input type="radio" name="ask-scope" value={s.key} checked={scope === s.key} onChange={() => setScope(s.key)} disabled={busy} />
-                    {s.label}
-                  </label>
-                ))}
-                {scope === "dates" && (
-                  <span className="scope-extra">
-                    <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="From date" disabled={busy} />
-                    <span className="muted">to</span>
-                    <input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="To date" disabled={busy} />
-                  </span>
-                )}
-                {scope === "meeting" && (
-                  <select value={meetingId} onChange={(e) => setMeetingId(e.target.value)} aria-label="Meeting" disabled={busy} className="scope-extra">
-                    <option value="">Choose a meeting…</option>
-                    {withTranscript.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {shortDate(m.draft.date)} · {m.source.title || m.draft.title}
-                      </option>
-                    ))}
-                  </select>
-                )}
+              <div className="ov-field">
+                <label className="ov-label" htmlFor="ask-question">
+                  Question
+                </label>
+                <textarea
+                  id="ask-question"
+                  className="ov-input"
+                  ref={textareaRef}
+                  rows={3}
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  onKeyDown={onKeyDown}
+                  placeholder="What has the Council said about the Naranja Park bond? When did the water rate study come up?"
+                  disabled={busy}
+                />
               </div>
+              <fieldset className="ask-scope ov-field" role="radiogroup" aria-label="Which meetings to look through">
+                <legend className="ov-label">Which meetings</legend>
+                <div className="row">
+                  {SCOPES.map((s) => (
+                    <label key={s.key} className="inline">
+                      <input type="radio" name="ask-scope" value={s.key} checked={scope === s.key} onChange={() => setScope(s.key)} disabled={busy} />
+                      {s.label}
+                    </label>
+                  ))}
+                  {scope === "dates" && (
+                    <span className="scope-extra">
+                      <input className="ov-input" type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="From date" disabled={busy} />
+                      <span className="muted">to</span>
+                      <input className="ov-input" type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="To date" disabled={busy} />
+                    </span>
+                  )}
+                  {scope === "meeting" && (
+                    <select value={meetingId} onChange={(e) => setMeetingId(e.target.value)} aria-label="Meeting" disabled={busy} className="scope-extra ov-input">
+                      <option value="">Choose a meeting…</option>
+                      {withTranscript.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {shortDate(m.draft.date)} · {m.source.title || m.draft.title}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </fieldset>
               <div className="row ask-actions">
-                <button className="primary ai" onClick={ask} disabled={busy || !question.trim() || (scope === "meeting" && !meetingId)}>
+                <button className="ov-btn ov-btn-cta ai" onClick={ask} disabled={busy || !question.trim() || (scope === "meeting" && !meetingId)}>
                   <Sparkle />
                   Ask
                 </button>
@@ -203,38 +211,57 @@ export function Ask({ active, state, busy, setBusy, progress, go, setNotice }) {
                   {savedAtTime(current.askedAt)} · {scopeLabel(current.scope)}
                 </p>
               </header>
-              <div className="answer-body minutes-preview" ref={answerRef} onClick={onAnswerClick} dangerouslySetInnerHTML={{ __html: html }} />
+              <div className="answer-body ov-prose" ref={answerRef} onClick={onAnswerClick} dangerouslySetInnerHTML={{ __html: html }} />
               {current.citations && current.citations.length > 0 && (
                 <div className="sources">
                   <p className="section-label">Sources</p>
-                  <ol className="source-rows">
-                    {current.citations.map((c) => {
-                      const at = c.clipId ? playUrlFor(c.clipId, Math.max(0, (c.sec || 0) - 3)) : null;
-                      return (
-                        <li key={c.n} id={`cite-${c.n}`} className={flash === c.n ? "source-row flash" : "source-row"}>
-                          <span className="cite-chip static" aria-hidden="true">{c.n}</span>
-                          <button className="source-main" onClick={() => citeOpen(c)} title="Open the transcript here">
-                            <span className="source-meta">
-                              {formatDate(c.date, "short") || "Date needed"} · {c.title}
-                              {c.time ? ` · ${c.time}` : ""}
-                            </span>
-                            {c.quote && <span className="source-quote">“{c.quote}”</span>}
-                          </button>
-                          {at && (
-                            <button className="link-button watch-at" onClick={() => api.openExternal(at)}>
-                              Watch
-                            </button>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ol>
+                  <div className="ov-table-wrap">
+                    <table className="ov-table source-rows">
+                      <thead>
+                        <tr>
+                          <th scope="col">Source</th>
+                          <th scope="col">Meeting and moment</th>
+                          <th scope="col">Video</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {current.citations.map((c) => {
+                          const at = c.clipId ? playUrlFor(c.clipId, Math.max(0, (c.sec || 0) - 3)) : null;
+                          return (
+                            <tr key={c.n} id={`cite-${c.n}`} className={flash === c.n ? "source-row flash" : "source-row"}>
+                              <td>
+                                <span className="cite-chip static" aria-hidden="true">
+                                  {c.n}
+                                </span>
+                              </td>
+                              <td>
+                                <button className="source-main link-button" onClick={() => citeOpen(c)} title="Open the transcript here">
+                                  <span className="source-meta">
+                                    {formatDate(c.date, "short") || "Date needed"} · {c.title}
+                                    {c.time ? ` · ${c.time}` : ""}
+                                  </span>
+                                  {c.quote && <span className="source-quote">“{c.quote}”</span>}
+                                </button>
+                              </td>
+                              <td>
+                                {at && (
+                                  <button className="link-button ov-link watch-at" onClick={() => api.openExternal(at)}>
+                                    Watch
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </article>
           )}
 
-          <p className="hint ask-note">
+          <p className="ov-emphasis-2 ask-note">
             Answers come from automatic transcripts and staff summaries; verify against the video before relying on
             them.
           </p>

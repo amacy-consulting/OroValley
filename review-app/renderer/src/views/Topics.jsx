@@ -51,7 +51,8 @@ function MonthChart({ byMonth, color, name }) {
               {v > 0 && (
                 <path
                   d={`M${x} ${padT + plotH} V${y + 4} a4 4 0 0 1 4 -4 h${barW - 8} a4 4 0 0 1 4 4 V${padT + plotH} Z`}
-                  fill={color}
+                  fill="var(--blue)"
+                  data-topic-color={color}
                 >
                   <title>{`${monthLabel(m)}: ${plural(v, "mention")}`}</title>
                 </path>
@@ -89,13 +90,15 @@ function TopicForm({ initial, onSave, onCancel, saving, submitLabel }) {
         if (name.trim() && list.length) onSave({ name: name.trim(), terms: list, color });
       }}
     >
-      <label>
-        Topic name
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Water rates" autoFocus />
+      <label className="ov-field">
+        <span className="ov-label">Topic name</span>
+        <input className="ov-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Water rates" autoFocus />
       </label>
-      <label>
-        Words and phrases to watch <span className="muted">(comma-separated)</span>
-        <input value={terms} onChange={(e) => setTerms(e.target.value)} placeholder="water rate, water rates, rate increase" />
+      <label className="ov-field">
+        <span className="ov-label">
+          Words and phrases to watch <span className="muted">(comma-separated)</span>
+        </span>
+        <input className="ov-input" value={terms} onChange={(e) => setTerms(e.target.value)} placeholder="water rate, water rates, rate increase" />
       </label>
       <div className="row color-row" role="radiogroup" aria-label="Colour">
         {TOPIC_COLORS.map((c) => (
@@ -112,10 +115,10 @@ function TopicForm({ initial, onSave, onCancel, saving, submitLabel }) {
         ))}
       </div>
       <div className="row">
-        <button type="submit" className="primary" disabled={saving || !name.trim() || !list.length}>
+        <button type="submit" className="ov-btn" disabled={saving || !name.trim() || !list.length}>
           {submitLabel}
         </button>
-        <button type="button" onClick={onCancel} disabled={saving}>
+        <button type="button" className="link-button" onClick={onCancel} disabled={saving}>
           Cancel
         </button>
       </div>
@@ -201,13 +204,13 @@ export function Topics({ active, go, setNotice, onTopicsChanged, topicsVersion, 
   return (
     <section className="view view-topics" aria-label="Topics">
       <div className="topics-grid">
-        <aside className="topics-list pane">
-          <div className="pane-head topics-list-head">
+        <aside className="topics-list ov-quicklinks">
+          <p className="ov-quicklinks-title topics-list-head">
             <span>Watched topics</span>
             <button className="link-button" onClick={() => { setAdding(true); setEditing(false); }}>
               Add topic
             </button>
-          </div>
+          </p>
           {overview === null && !error && <p className="muted pad">Loading…</p>}
           {error && <p className="error pad">{error}</p>}
           {overview && topics.length === 0 && !adding && (
@@ -240,7 +243,7 @@ export function Topics({ active, go, setNotice, onTopicsChanged, topicsVersion, 
         <div className="topic-detail">
           {adding && (
             <div className="pane topic-card">
-              <p className="pane-head">New topic</p>
+              <p className="pane-head ov-sidebox-title">New topic</p>
               <div className="pane-body">
                 <TopicForm initial={{ color: nextColor }} onSave={add} onCancel={() => setAdding(false)} saving={saving} submitLabel="Watch this topic" />
               </div>
@@ -253,7 +256,7 @@ export function Topics({ active, go, setNotice, onTopicsChanged, topicsVersion, 
                 {topics.length ? "Pick a topic on the left." : "Add a topic to start tracking it across meetings."}
               </p>
               {!topics.length && (
-                <button className="primary" onClick={() => setAdding(true)}>
+                <button className="ov-btn" onClick={() => setAdding(true)}>
                   Add topic
                 </button>
               )}
@@ -263,25 +266,29 @@ export function Topics({ active, go, setNotice, onTopicsChanged, topicsVersion, 
           {!adding && selected && (
             <>
               <header className="topic-head">
-                <div>
+                <div className="ov-prose">
                   <h2>
                     <Dot color={selected.color} />
                     {selected.name}
                   </h2>
-                  <p className="muted">
-                    Watching: {(selected.terms || []).join(", ")}
-                  </p>
+                  <p className="ov-emphasis-1">Watching: {(selected.terms || []).join(", ")}</p>
                 </div>
                 <div className="row">
-                  <button onClick={() => openInSearch(selected)}>Open in Search</button>
-                  <button onClick={() => setEditing((v) => !v)}>{editing ? "Close editor" : "Edit"}</button>
-                  <button onClick={remove}>Remove</button>
+                  <button className="link-button" onClick={() => openInSearch(selected)}>
+                    Open in Search
+                  </button>
+                  <button className="link-button" onClick={() => setEditing((v) => !v)}>
+                    {editing ? "Close editor" : "Edit"}
+                  </button>
+                  <button className="ov-btn ov-btn-danger ov-btn-compact" onClick={remove}>
+                    Remove
+                  </button>
                 </div>
               </header>
 
               {editing && (
                 <div className="pane topic-card">
-                  <p className="pane-head">Edit topic</p>
+                  <p className="pane-head ov-sidebox-title">Edit topic</p>
                   <div className="pane-body">
                     <TopicForm initial={selected} onSave={update} onCancel={() => setEditing(false)} saving={saving} submitLabel="Save changes" />
                   </div>
@@ -289,21 +296,22 @@ export function Topics({ active, go, setNotice, onTopicsChanged, topicsVersion, 
               )}
 
               <div className="pane topic-card">
-                <p className="pane-head">Mentions by month</p>
+                <p className="pane-head ov-sidebox-title">Mentions by month</p>
                 <div className="pane-body">
                   {stats ? <MonthChart byMonth={stats.byMonth} color={selected.color} name={selected.name} /> : <p className="muted">Counting…</p>}
                 </div>
               </div>
 
               <div className="pane topic-card">
-                <p className="pane-head">
+                <p className="pane-head ov-sidebox-title">
                   Meetings{stats ? ` (${stats.meetingsCount || 0}) · ${plural(stats.totalHits || 0, "mention")} in all` : ""}
                 </p>
                 {stats && (stats.meetings || []).length === 0 && (
                   <p className="muted pad">No saved transcript, summary or minutes draft mentions this topic yet.</p>
                 )}
                 {stats && stats.meetings && stats.meetings.length > 0 && (
-                  <table className="data-table">
+                  <div className="ov-table-wrap">
+                  <table className="data-table ov-table compact">
                     <thead>
                       <tr>
                         <th>Date</th>
@@ -337,6 +345,7 @@ export function Topics({ active, go, setNotice, onTopicsChanged, topicsVersion, 
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 )}
               </div>
             </>

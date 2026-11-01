@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { latestHtml } from "../../../../../widget/render.js";
 import widgetCss from "../../../../../widget/widget.css?raw";
+import tokensCss from "../../design-system/tokens.css?raw";
+import componentsCss from "../../design-system/components.css?raw";
 import { api } from "../../api.js";
 import { fieldsOf, hasSummary, savedOn, STATUS_LABELS } from "../../util.js";
 import { Sparkle } from "../../components/icons.jsx";
@@ -11,7 +13,8 @@ const OVERVIEW_WORDS = 45;
 const DETAILS_WORDS = 200;
 
 function Preview({ draft }) {
-  const srcDoc = `<!doctype html><html><head><meta charset="utf-8"><style>${widgetCss}</style></head>
+  // The same three stylesheets the published widget loads, so the preview matches the website.
+  const srcDoc = `<!doctype html><html><head><meta charset="utf-8"><style>${tokensCss}\n${componentsCss}\n${widgetCss}</style></head>
     <body><main class="ecw">${latestHtml(draft, { open: true })}</main></body></html>`;
   return (
     <iframe
@@ -133,11 +136,11 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
             </details>
           )}
           <div className="conflict-actions">
-            <button onClick={() => resolve("website")} disabled={busy}>
-              {meeting.conflict.website ? "Use the website version" : "Accept the removal"}
-            </button>
-            <button className="primary" onClick={() => resolve("mine")} disabled={busy}>
+            <button className="ov-btn" onClick={() => resolve("mine")} disabled={busy}>
               Keep my version
+            </button>
+            <button className="link-button" onClick={() => resolve("website")} disabled={busy}>
+              {meeting.conflict.website ? "Use the website version" : "Accept the removal"}
             </button>
           </div>
         </div>
@@ -153,30 +156,34 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
 
       <div className="editor-grid">
         <fieldset className="fields" disabled={busy}>
-          <label>
-            Meeting date
-            <input type="date" value={fields.date} onChange={set("date")} />
+          <label className="ov-field">
+            <span className="ov-label">Meeting date</span>
+            <input className="ov-input" type="date" value={fields.date} onChange={set("date")} />
           </label>
-          <label>
-            Meeting type
-            <input value={fields.title} onChange={set("title")} />
+          <label className="ov-field">
+            <span className="ov-label">Meeting type</span>
+            <input className="ov-input" value={fields.title} onChange={set("title")} />
           </label>
-          <label>
-            Overview <span className="muted">(one or two short sentences)</span>
-            <WordCount text={fields.overview} limit={OVERVIEW_WORDS} />
-            <textarea rows={5} value={fields.overview} onChange={set("overview")} />
+          <label className="ov-field">
+            <span className="ov-label">
+              Overview <span className="muted">(one or two short sentences)</span>
+              <WordCount text={fields.overview} limit={OVERVIEW_WORDS} />
+            </span>
+            <textarea className="ov-input" rows={5} value={fields.overview} onChange={set("overview")} />
           </label>
-          <label>
-            Full summary <span className="muted">(what was discussed and decided)</span>
-            <WordCount text={fields.details} limit={DETAILS_WORDS} />
-            <textarea className="tall" rows={16} value={fields.details} onChange={set("details")} />
+          <label className="ov-field">
+            <span className="ov-label">
+              Full summary <span className="muted">(what was discussed and decided)</span>
+              <WordCount text={fields.details} limit={DETAILS_WORDS} />
+            </span>
+            <textarea className="ov-input tall" rows={16} value={fields.details} onChange={set("details")} />
           </label>
           <p className="hint">
             Formatting: <code>### Heading</code>, <code>- bullet</code>, <code>1. numbered</code>, <code>**bold**</code>
           </p>
-          <label>
-            Video link
-            <input value={fields.recordingUrl} onChange={set("recordingUrl")} placeholder="https://…" />
+          <label className="ov-field">
+            <span className="ov-label">Video link</span>
+            <input className="ov-input" value={fields.recordingUrl} onChange={set("recordingUrl")} placeholder="https://" />
           </label>
           <p className="hint">
             {meeting.transcript
@@ -186,13 +193,13 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
         </fieldset>
 
         <div className="preview pane">
-          <p className="preview-label pane-head">Preview (as it would appear on the website)</p>
+          <p className="preview-label pane-head ov-sidebox-title">Preview (as it would appear on the website)</p>
           <Preview draft={draft} />
         </div>
       </div>
 
       <footer className="editor-actions">
-        <button className={needsSummary ? "primary ai" : "ai"} onClick={summarize} disabled={busy}>
+        <button className={needsSummary ? "ov-btn ai" : "link-button ai"} onClick={summarize} disabled={busy}>
           <Sparkle />
           {needsSummary ? "Write summary with Claude" : "Rewrite with Claude"}
         </button>
@@ -209,6 +216,7 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
         )}
         {beforeRewrite && (
           <button
+            className="link-button"
             onClick={() => {
               setFields(beforeRewrite);
               setBeforeRewrite(null);
@@ -217,7 +225,7 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
             Undo rewrite
           </button>
         )}
-        <button onClick={save} disabled={!dirty || busy}>
+        <button className="link-button" onClick={save} disabled={!dirty || busy}>
           Save changes
         </button>
         <span className="spacer" />
@@ -226,17 +234,17 @@ export function SummaryPanel({ meeting, onState, setNotice, busy, runJob, onDirt
           <span className={`pill pill-${meeting.status}`}>{STATUS_LABELS[meeting.status]}</span>
           {meeting.onWebsite && <span className="pill pill-live">On the website</span>}
           {meeting.status !== "review" && (
-            <button onClick={() => setStatus("review")} disabled={busy}>
+            <button className="link-button" onClick={() => setStatus("review")} disabled={busy}>
               Move back to review
             </button>
           )}
           {meeting.status !== "hidden" && (
-            <button onClick={() => setStatus("hidden")} disabled={busy}>
+            <button className="link-button" onClick={() => setStatus("hidden")} disabled={busy}>
               Hide
             </button>
           )}
           {(meeting.status !== "approved" || dirty) && (
-            <button className={needsSummary ? "" : "primary"} onClick={() => setStatus("approved")} disabled={busy}>
+            <button className={needsSummary ? "link-button" : "ov-btn"} onClick={() => setStatus("approved")} disabled={busy}>
               {meeting.status === "approved" ? "Save and keep approved" : "Approve"}
             </button>
           )}

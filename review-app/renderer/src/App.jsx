@@ -29,6 +29,7 @@ export default function App() {
   const [progress, setProgress] = useState("");
   const [notice, setNotice] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [setupDismissed, setSetupDismissed] = useState(false);
   const [showTranscribe, setShowTranscribe] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
   const [jobs, setJobs] = useState(NO_JOBS);
@@ -166,74 +167,82 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="topbar">
-        <Mark />
-        <div className="topbar-title">
-          <h1>Oro Valley Council Dashboard</h1>
-          <span className="topbar-caption">Meeting analysis · staff tool</span>
-        </div>
-        <nav className="main-nav tabs" role="tablist" aria-label="Views" onKeyDown={onNavKey}>
-          {NAV.map((n) => (
-            <button
-              key={n.key}
-              role="tab"
-              data-nav={n.key}
-              aria-selected={nav === n.key}
-              tabIndex={nav === n.key ? 0 : -1}
-              className={nav === n.key ? "tab active" : "tab"}
-              onClick={() => setNav(n.key)}
-            >
-              {n.label}
+      <div className="app-hero">
+        <header className="topbar ov-header">
+          <div className="ov-header-logo" role="img" aria-label="Town of Oro Valley, Arizona" />
+          <h1 className="ov-header-name">Council Dashboard</h1>
+          <nav className="main-nav ov-nav" role="tablist" aria-label="Views" onKeyDown={onNavKey}>
+            {NAV.map((n) => (
+              <button
+                key={n.key}
+                role="tab"
+                data-nav={n.key}
+                aria-selected={nav === n.key}
+                aria-current={nav === n.key ? "page" : undefined}
+                tabIndex={nav === n.key ? 0 : -1}
+                className={nav === n.key ? "tab ov-nav-link active" : "tab ov-nav-link"}
+                onClick={() => setNav(n.key)}
+              >
+                {n.label}
+              </button>
+            ))}
+          </nav>
+          <span className="progress" aria-live="polite">
+            {queueActive ? "" : progress}
+          </span>
+          <div className="topbar-actions">
+            {queueActive && (
+              <button className="pill pill-working" onClick={() => setShowQueue(true)} aria-label={`Working on ${queueAt} of ${queueTotal}; open the queue`}>
+                <span className="spinner small" aria-hidden="true" />
+                Working {queueAt}/{queueTotal}
+              </button>
+            )}
+            {!queueActive && (jobs.done || []).length > 0 && (
+              <button className="link-button quiet" onClick={() => setShowQueue(true)}>
+                Queue
+              </button>
+            )}
+            <button className="link-button" onClick={refresh} disabled={anyBusy}>
+              Check for new meetings
             </button>
-          ))}
-        </nav>
-        <span className="progress" aria-live="polite">
-          {queueActive ? "" : progress}
-        </span>
-        <div className="topbar-actions">
-          {queueActive && (
-            <button className="pill pill-working" onClick={() => setShowQueue(true)} aria-label={`Working on ${queueAt} of ${queueTotal}; open the queue`}>
-              <span className="spinner small" aria-hidden="true" />
-              Working {queueAt}/{queueTotal}
+            <button className="ov-btn ov-btn-compact" onClick={() => setShowTranscribe(true)} disabled={state.meetings.length === 0}>
+              Transcribe meetings…
             </button>
-          )}
-          {!queueActive && (jobs.done || []).length > 0 && (
-            <button className="link-button quiet" onClick={() => setShowQueue(true)}>
-              Queue
+            <WebsiteMenu
+              pendingCount={state.pendingCount}
+              canPublish={canPublish}
+              widgetUrl={settings.widgetUrl}
+              onPublish={publish}
+              onOpen={() => api.openExternal(settings.widgetUrl)}
+            />
+            <button className="link-button" onClick={() => setShowSettings(true)}>
+              Settings
             </button>
-          )}
-          <button onClick={refresh} disabled={anyBusy}>
-            Check for new meetings
-          </button>
-          <button onClick={() => setShowTranscribe(true)} disabled={state.meetings.length === 0}>
-            Transcribe meetings…
-          </button>
-          <WebsiteMenu
-            pendingCount={state.pendingCount}
-            canPublish={canPublish}
-            widgetUrl={settings.widgetUrl}
-            onPublish={publish}
-            onOpen={() => api.openExternal(settings.widgetUrl)}
-          />
-          <button onClick={() => setShowSettings(true)}>Settings</button>
-        </div>
-      </header>
+          </div>
+        </header>
+      </div>
 
-      {missing.length > 0 && (
-        <p className="banner">
+      {missing.length > 0 && !setupDismissed && (
+        <div className="banner ov-alert ov-alert-10" role="status">
           <BannerIcon kind="warn" />
-          <span className="banner-text">
+          <p className="banner-text">
             Setup isn't finished on this computer. Add {missing.join(", ")} in Settings.{" "}
             <button className="link-button" onClick={() => setShowSettings(true)}>
               Open Settings
             </button>
-          </span>
-        </p>
+          </p>
+          <button className="ov-alert-dismiss" onClick={() => setSetupDismissed(true)}>
+            Dismiss
+          </button>
+        </div>
       )}
       {notice && (
-        <p className={`banner banner-${notice.kind}`} role={notice.kind === "error" ? "alert" : "status"}>
+        <div
+          className={`banner banner-${notice.kind} ov-alert${notice.kind === "ok" ? " ov-alert-30" : ""}`}
+          role={notice.kind === "error" ? "alert" : "status"}
+        >
           <BannerIcon kind={notice.kind} />
-          <span className="banner-text">
+          <p className="banner-text">
             {notice.text}{" "}
             {notice.settings && (
               <button className="link-button" onClick={() => setShowSettings(true)}>
@@ -245,8 +254,11 @@ export default function App() {
                 View the widget
               </button>
             )}
-          </span>
-        </p>
+          </p>
+          <button className="ov-alert-dismiss" onClick={() => setNotice(null)}>
+            Dismiss
+          </button>
+        </div>
       )}
 
       <div className="views" hidden={nav !== "meetings"}>
@@ -292,6 +304,13 @@ export default function App() {
       <div className="views" hidden={nav !== "ask"}>
         <Ask active={nav === "ask"} state={state} busy={anyBusy} setBusy={setBusy} progress={progress} go={go} setNotice={setNotice} />
       </div>
+
+      <footer className="app-footer ov-footer">
+        <div className="ov-footer-bottom">
+          <Mark size={40} footer />
+          <span>Town of Oro Valley · 11000 N. La Cañada Drive · 520-229-4700 · Staff tool; summaries and drafts are not official records</span>
+        </div>
+      </footer>
 
       {showSettings && (
         <Settings

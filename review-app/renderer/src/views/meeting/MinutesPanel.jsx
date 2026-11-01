@@ -103,7 +103,7 @@ export function MinutesPanel({ meeting, busy, runJob, onState, setNotice, onDirt
   }
 
   const draftButton = (primary) => (
-    <button className={primary ? "primary ai" : "ai"} onClick={draft} disabled={busy || !meeting.clipId}>
+    <button className={primary ? "ov-btn ai" : "link-button ai"} onClick={draft} disabled={busy || !meeting.clipId}>
       <Sparkle />
       {doc ? "Redraft with Claude" : "Draft minutes with Claude"}
     </button>
@@ -158,35 +158,36 @@ export function MinutesPanel({ meeting, busy, runJob, onState, setNotice, onDirt
       </div>
 
       {doc.notes && doc.notes.length > 0 && (
-        <div className="notes" role="region" aria-label="Reviewer notes from Claude">
-          <p className="notes-title">
+        <details className="notes ov-accordion" open role="region" aria-label="Reviewer notes from Claude">
+          <summary className="notes-title ov-accordion-trigger">
             <Sparkle />
-            <span>
-              <strong>Reviewer notes from Claude</strong> — things to check before these minutes are used.
-            </span>
-          </p>
-          <ul>
-            {doc.notes.map((note, i) => (
-              <li key={i}>
-                <label className="inline">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(checked[i])}
-                    onChange={(e) => setChecked({ ...checked, [i]: e.target.checked })}
-                  />
-                  <span className={checked[i] ? "done" : ""}>{note}</span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        </div>
+            <strong>Reviewer notes from Claude</strong>
+          </summary>
+          <div className="ov-accordion-body">
+            <p className="hint">Things to check before these minutes are used.</p>
+            <ul>
+              {doc.notes.map((note, i) => (
+                <li key={i}>
+                  <label className="inline">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(checked[i])}
+                      onChange={(e) => setChecked({ ...checked, [i]: e.target.checked })}
+                    />
+                    <span className={checked[i] ? "done" : ""}>{note}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
       )}
 
       <div className="minutes-grid">
         <label className="minutes-editor pane">
-          <span className="pane-head">Draft minutes (edit here)</span>
+          <span className="pane-head ov-sidebox-title">Draft minutes (edit here)</span>
           <textarea
-            className="tall minutes-text"
+            className="ov-input tall minutes-text"
             value={text}
             onChange={(e) => setText(e.target.value)}
             disabled={busy}
@@ -194,8 +195,8 @@ export function MinutesPanel({ meeting, busy, runJob, onState, setNotice, onDirt
           />
         </label>
         <div className="minutes-preview-wrap pane">
-          <p className="preview-label pane-head">How it reads</p>
-          <div className="minutes-preview" dangerouslySetInnerHTML={{ __html: html }} />
+          <p className="preview-label pane-head ov-sidebox-title">How it reads</p>
+          <div className="minutes-preview ov-prose" dangerouslySetInnerHTML={{ __html: html }} />
         </div>
       </div>
 
@@ -214,6 +215,7 @@ export function MinutesPanel({ meeting, busy, runJob, onState, setNotice, onDirt
         )}
         {beforeRedraft && (
           <button
+            className="link-button"
             onClick={() => {
               setText(beforeRedraft);
               setBeforeRedraft(null);
@@ -225,23 +227,23 @@ export function MinutesPanel({ meeting, busy, runJob, onState, setNotice, onDirt
         )}
         <span className="spacer" />
         {s.minutesSeq && (
-          <button onClick={showPublished} disabled={busy}>
+          <button className="link-button" onClick={showPublished} disabled={busy}>
             Compare with published minutes
           </button>
         )}
-        <button onClick={() => exportAs("docx")} disabled={busy}>
+        <button className="link-button" onClick={() => exportAs("docx")} disabled={busy}>
           Export to Word (.docx)
         </button>
-        <button onClick={() => exportAs("txt")} disabled={busy}>
+        <button className="link-button" onClick={() => exportAs("txt")} disabled={busy}>
           Export as text
         </button>
-        <button onClick={copy} disabled={busy}>
+        <button className="link-button" onClick={copy} disabled={busy}>
           Copy to clipboard
         </button>
-        <button onClick={() => api.showMinutesInFolder(meeting.id)} disabled={busy}>
+        <button className="link-button" onClick={() => api.showMinutesInFolder(meeting.id)} disabled={busy}>
           Open in folder
         </button>
-        <button className="primary" onClick={save} disabled={!dirty || busy}>
+        <button className="ov-btn" onClick={save} disabled={!dirty || busy}>
           Save draft
         </button>
       </footer>

@@ -134,74 +134,88 @@ export function Search({ active, state, query, setQuery, go, setNotice, openTran
 
   return (
     <section className="view view-search" aria-label="Search">
-      <header className="view-head">
-        <div className="view-title">
-          <h2>Search</h2>
+      <div className="search-band">
+        <header className="view-head ov-prose">
+          <h2>Search our meetings</h2>
           <p className="corpus-line" aria-live="polite">
             {stats ? corpusLine(stats) : "Reading the saved transcripts…"}
           </p>
-        </div>
-      </header>
-
-      <div className="search-box">
-        <div className="search-field search-big">
-          <SearchIcon size={18} />
+        </header>
+        <form
+          className="ov-search"
+          role="search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            run();
+          }}
+        >
           <input
             ref={inputRef}
             type="search"
-            className="search-input"
-            placeholder="Search every transcript, summary and minutes draft…"
+            className="search-input ov-search-input"
+            placeholder="Search every transcript, summary and minutes draft"
             aria-label="Search all meetings"
             value={text}
             onChange={(e) => setQuery({ ...query, text: e.target.value })}
             onKeyDown={onKeyDown}
           />
-        </div>
-        <p className="hint search-hint">
-          <code>"exact phrase"</code> · <code>-exclude</code> · <code>word*</code> matches word, words, wording…
+          <button type="submit" className="ov-search-button">
+            Search
+          </button>
+        </form>
+        <p className="search-hint">
+          <code>"exact phrase"</code> · <code>-exclude</code> · <code>word*</code> matches word, words, wording
         </p>
+      </div>
 
+      <div className="search-box">
         <div className="filters" role="group" aria-label="Filters">
-          <fieldset className="filter-group">
-            <legend>Content</legend>
-            {KIND_OPTIONS.map((k) => (
-              <label key={k.key} className="inline">
-                <input
-                  type="checkbox"
-                  checked={query.kinds.includes(k.key)}
-                  onChange={() => setQuery({ ...query, kinds: toggle(query.kinds, k.key) })}
-                />
-                {k.label}
+          <fieldset className="filter-group ov-field">
+            <legend className="ov-label">Content</legend>
+            <div className="row">
+              {KIND_OPTIONS.map((k) => (
+                <label key={k.key} className="inline">
+                  <input
+                    type="checkbox"
+                    checked={query.kinds.includes(k.key)}
+                    onChange={() => setQuery({ ...query, kinds: toggle(query.kinds, k.key) })}
+                  />
+                  {k.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset className="filter-group ov-field">
+            <legend className="ov-label">Body</legend>
+            <div className="row">
+              {BODY_OPTIONS.map((b) => (
+                <label key={b.key} className="inline">
+                  <input
+                    type="checkbox"
+                    checked={query.bodies.includes(b.key)}
+                    onChange={() => setQuery({ ...query, bodies: toggle(query.bodies, b.key) })}
+                  />
+                  {b.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset className="filter-group filter-dates ov-field">
+            <legend className="ov-label">Dates</legend>
+            <div className="row">
+              <label className="inline">
+                From
+                <input className="ov-input" type="date" value={query.from} onChange={(e) => setQuery({ ...query, from: e.target.value })} />
               </label>
-            ))}
-          </fieldset>
-          <fieldset className="filter-group">
-            <legend>Body</legend>
-            {BODY_OPTIONS.map((b) => (
-              <label key={b.key} className="inline">
-                <input
-                  type="checkbox"
-                  checked={query.bodies.includes(b.key)}
-                  onChange={() => setQuery({ ...query, bodies: toggle(query.bodies, b.key) })}
-                />
-                {b.label}
+              <label className="inline">
+                To
+                <input className="ov-input" type="date" value={query.to} onChange={(e) => setQuery({ ...query, to: e.target.value })} />
               </label>
-            ))}
+            </div>
           </fieldset>
-          <fieldset className="filter-group filter-dates">
-            <legend>Dates</legend>
-            <label className="inline">
-              From
-              <input type="date" value={query.from} onChange={(e) => setQuery({ ...query, from: e.target.value })} />
-            </label>
-            <label className="inline">
-              To
-              <input type="date" value={query.to} onChange={(e) => setQuery({ ...query, to: e.target.value })} />
-            </label>
-          </fieldset>
-          <fieldset className="filter-group">
-            <legend>Sort</legend>
-            <select value={query.sort} onChange={(e) => setQuery({ ...query, sort: e.target.value })} aria-label="Sort results">
+          <fieldset className="filter-group ov-field">
+            <legend className="ov-label">Sort</legend>
+            <select className="ov-input" value={query.sort} onChange={(e) => setQuery({ ...query, sort: e.target.value })} aria-label="Sort results">
               <option value="relevance">Relevance</option>
               <option value="newest">Newest</option>
             </select>
@@ -229,7 +243,7 @@ export function Search({ active, state, query, setQuery, go, setNotice, openTran
                 drafts saved on this computer. Transcribe a few meetings and they become searchable here.
               </p>
               <div className="row">
-                <button className="primary" onClick={openTranscribe}>
+                <button className="ov-btn" onClick={openTranscribe}>
                   Transcribe meetings…
                 </button>
               </div>
@@ -264,17 +278,21 @@ export function Search({ active, state, query, setQuery, go, setNotice, openTran
               >
                 <label className="inline">
                   Topic name
-                  <input value={saveTopic.name} onChange={(e) => setSaveTopic({ name: e.target.value })} autoFocus />
+                  <input className="ov-input" value={saveTopic.name} onChange={(e) => setSaveTopic({ name: e.target.value })} autoFocus />
                 </label>
-                <button type="submit" disabled={!saveTopic.name.trim()}>
+                <button type="submit" className="ov-btn ov-btn-compact" disabled={!saveTopic.name.trim()}>
                   Save
                 </button>
-                <button type="button" onClick={() => setSaveTopic(null)}>
+                <button type="button" className="link-button" onClick={() => setSaveTopic(null)}>
                   Cancel
                 </button>
               </form>
             ) : (
-              <button onClick={() => setSaveTopic({ name: termsFromQuery(text).join(", ") })} disabled={!termsFromQuery(text).length}>
+              <button
+                className="link-button"
+                onClick={() => setSaveTopic({ name: termsFromQuery(text).join(", ") })}
+                disabled={!termsFromQuery(text).length}
+              >
                 Save as topic
               </button>
             )}
@@ -291,9 +309,9 @@ export function Search({ active, state, query, setQuery, go, setNotice, openTran
             {shownMeetings.map((m) => {
               const watchUrl = m.playerUrl || playUrlFor(m.clipId, 0);
               return (
-                <li key={m.meetingId} className="result">
+                <li key={m.meetingId} className="result ov-listing">
                   <header className="result-head">
-                    <button className="result-title" onClick={() => go.toMeeting(m.meetingId, { tab: "summary" })}>
+                    <button className="result-title link-button" onClick={() => go.toMeeting(m.meetingId, { tab: "summary" })}>
                       <span className="result-date">{formatDate(m.date, "short") || "Date needed"}</span>
                       <span className="result-name">{m.title}</span>
                     </button>
@@ -302,8 +320,8 @@ export function Search({ active, state, query, setQuery, go, setNotice, openTran
                       {plural(m.hits || 0, "match", "matches")}
                     </span>
                     {watchUrl && (
-                      <button className="link-button" onClick={() => api.openExternal(watchUrl)}>
-                        Watch
+                      <button className="link-button ov-link" onClick={() => api.openExternal(watchUrl)}>
+                        Watch on Swagit
                       </button>
                     )}
                   </header>
@@ -326,7 +344,7 @@ export function Search({ active, state, query, setQuery, go, setNotice, openTran
                             </span>
                           </button>
                           {at && (
-                            <button className="link-button watch-at" onClick={() => api.openExternal(at)}>
+                            <button className="link-button ov-link watch-at" onClick={() => api.openExternal(at)}>
                               <PlayIcon /> Watch at {sn.time}
                             </button>
                           )}

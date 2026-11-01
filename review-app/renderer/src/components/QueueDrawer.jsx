@@ -20,7 +20,13 @@ export function QueueDrawer({ jobs, state, onClose, onOpenMeeting }) {
       title="Work queue"
       subtitle={active ? `${pending.length + (running ? 1 : 0)} to go · one meeting at a time` : "Nothing running."}
       onClose={onClose}
-      actions={active && <button onClick={() => api.cancelAllJobs()}>Cancel all</button>}
+      actions={
+        active && (
+          <button className="ov-btn ov-btn-danger ov-btn-compact" onClick={() => api.cancelAllJobs()}>
+            Cancel all
+          </button>
+        )
+      }
     >
       <section className="queue-section">
         <p className="section-label">Running</p>
@@ -34,7 +40,9 @@ export function QueueDrawer({ jobs, state, onClose, onOpenMeeting }) {
               <span className="queue-kind">{KIND[running.kind] || running.kind}</span>
               <span className="muted queue-progress">{running.progress || "Starting…"}</span>
             </div>
-            <button onClick={() => api.cancelJob(running.meetingId, running.kind)}>Cancel</button>
+            <button className="link-button" onClick={() => api.cancelJob(running.meetingId, running.kind)}>
+              Cancel
+            </button>
           </div>
         ) : (
           <p className="muted">—</p>
@@ -54,7 +62,9 @@ export function QueueDrawer({ jobs, state, onClose, onOpenMeeting }) {
                 </button>
                 <span className="queue-kind">{KIND[j.kind] || j.kind}</span>
               </div>
-              <button onClick={() => api.cancelJob(j.meetingId, j.kind)}>Remove</button>
+              <button className="link-button" onClick={() => api.cancelJob(j.meetingId, j.kind)}>
+                Remove
+              </button>
             </li>
           ))}
         </ul>
@@ -67,7 +77,7 @@ export function QueueDrawer({ jobs, state, onClose, onOpenMeeting }) {
           {done.map((j, i) => (
             <li key={`${j.meetingId}-${j.kind}-${i}`} className={j.ok ? "queue-item ok" : "queue-item failed"}>
               <span className={j.ok ? "queue-mark ok" : "queue-mark failed"} aria-hidden="true">
-                {j.ok ? "✓" : "!"}
+                {j.ok ? "OK" : "!"}
               </span>
               <div className="queue-text">
                 <button className="link-button" onClick={() => onOpenMeeting(j.meetingId)}>

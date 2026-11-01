@@ -97,8 +97,8 @@ function MeetingView({ meeting, onState, setNotice, busy, setBusy, onDirty, prog
   return (
     <section className="editor" aria-label="Meeting">
       <header className="dash-head">
-        <div className="dash-title">
-          <h2>{formatDate(meeting.draft.date) || "Date needed"}</h2>
+        <div className="dash-title ov-prose">
+          <h1>{formatDate(meeting.draft.date) || "Date needed"}</h1>
           <p className="dash-sub">
             <strong>{s.title || meeting.draft.title}</strong>
             {meta ? ` · ${meta}` : ""}
@@ -119,13 +119,13 @@ function MeetingView({ meeting, onState, setNotice, busy, setBusy, onDirty, prog
               {topics.map((t) => (
                 <button
                   key={t.topicId}
-                  className="topic-chip"
+                  className="topic-chip ov-tag"
                   title={`Search this meeting for “${t.name}”`}
                   onClick={() => go.toSearch({ text: topicQuery(t), meetingId: meeting.id, meetingDate: meeting.draft.date })}
                 >
                   <Dot color={t.color} />
                   {t.name}
-                  <span className="topic-chip-count">{t.hits}</span>
+                  <span className="topic-chip-count ov-tag-count">{t.hits}</span>
                 </button>
               ))}
             </p>
@@ -158,7 +158,7 @@ function MeetingView({ meeting, onState, setNotice, busy, setBusy, onDirty, prog
         <Working text={progress || `${JOB_LABELS[job] || "Working"}…`} cancelling={cancelling} onCancel={cancel} />
       )}
 
-      <div className="view-tabs" role="tablist" aria-label="Meeting views" onKeyDown={onTabKey}>
+      <div className="view-tabs ov-tabs ov-tabs-page" role="tablist" aria-label="Meeting views" onKeyDown={onTabKey}>
         {VIEWS.map((v) => (
           <button
             key={v.key}
@@ -167,7 +167,7 @@ function MeetingView({ meeting, onState, setNotice, busy, setBusy, onDirty, prog
             aria-selected={view === v.key}
             aria-controls={`panel-${v.key}`}
             tabIndex={view === v.key ? 0 : -1}
-            className={view === v.key ? "view-tab active" : "view-tab"}
+            className={view === v.key ? "view-tab ov-tab active" : "view-tab ov-tab"}
             onClick={() => setView(v.key)}
           >
             {v.label}
@@ -176,26 +176,28 @@ function MeetingView({ meeting, onState, setNotice, busy, setBusy, onDirty, prog
         ))}
       </div>
 
-      <div id="panel-summary" role="tabpanel" hidden={view !== "summary"}>
-        <SummaryPanel meeting={meeting} onState={onState} setNotice={setNotice} busy={busy} runJob={runJob} onDirty={onDirty} />
-      </div>
-      <div id="panel-transcript" role="tabpanel" hidden={view !== "transcript"}>
-        <TranscriptPanel
-          meeting={meeting}
-          active={view === "transcript"}
-          busy={busy}
-          runJob={runJob}
-          onState={onState}
-          setNotice={setNotice}
-          scrollTo={scrollTo}
-          onSearchAll={(text) => go.toSearch({ text })}
-        />
-      </div>
-      <div id="panel-minutes" role="tabpanel" hidden={view !== "minutes"}>
-        <MinutesPanel meeting={meeting} busy={busy} runJob={runJob} onState={onState} setNotice={setNotice} onDirty={onDirty} />
-      </div>
-      <div id="panel-agenda" role="tabpanel" hidden={view !== "agenda"}>
-        <AgendaPanel meeting={meeting} active={view === "agenda"} />
+      <div className="view-panels ov-tabs-panel">
+        <div id="panel-summary" role="tabpanel" hidden={view !== "summary"}>
+          <SummaryPanel meeting={meeting} onState={onState} setNotice={setNotice} busy={busy} runJob={runJob} onDirty={onDirty} />
+        </div>
+        <div id="panel-transcript" role="tabpanel" hidden={view !== "transcript"}>
+          <TranscriptPanel
+            meeting={meeting}
+            active={view === "transcript"}
+            busy={busy}
+            runJob={runJob}
+            onState={onState}
+            setNotice={setNotice}
+            scrollTo={scrollTo}
+            onSearchAll={(text) => go.toSearch({ text })}
+          />
+        </div>
+        <div id="panel-minutes" role="tabpanel" hidden={view !== "minutes"}>
+          <MinutesPanel meeting={meeting} busy={busy} runJob={runJob} onState={onState} setNotice={setNotice} onDirty={onDirty} />
+        </div>
+        <div id="panel-agenda" role="tabpanel" hidden={view !== "agenda"}>
+          <AgendaPanel meeting={meeting} active={view === "agenda"} />
+        </div>
       </div>
     </section>
   );
@@ -224,35 +226,34 @@ export function Meetings({ state, selectedId, onSelect, onState, setNotice, busy
 
   return (
     <div className="main">
-      <nav className="sidebar" aria-label="Meetings">
+      <nav className="sidebar ov-quicklinks" aria-label="Meetings">
         <div className="sidebar-head">
-          <div className="tabs" role="tablist">
+          <div className="tabs status-tabs ov-tabs" role="tablist">
             {TABS.map((t) => (
               <button
                 key={t.status}
                 role="tab"
                 aria-selected={tab === t.status}
-                className={tab === t.status ? "tab active" : "tab"}
+                className={tab === t.status ? "tab ov-tab active" : "tab ov-tab"}
                 onClick={() => setTab(t.status)}
               >
                 {t.label} <span className="count">{byTab(t.status).length}</span>
               </button>
             ))}
           </div>
-          {state.meetings.length > 0 && (
-            <div className="search-field sidebar-search-wrap">
-              <SearchIcon />
-              <input
-                className="sidebar-search"
-                type="search"
-                placeholder="Find a meeting by date or name…"
-                aria-label="Find a meeting"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </div>
-          )}
         </div>
+        {state.meetings.length > 0 && (
+          <div className="ov-field sidebar-search-wrap">
+            <input
+              className="sidebar-search ov-input"
+              type="search"
+              placeholder="Find a meeting by date or name"
+              aria-label="Find a meeting"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+        )}
         {list.length === 0 && (
           <p className="empty">
             {state.meetings.length === 0
@@ -304,17 +305,19 @@ export function Meetings({ state, selectedId, onSelect, onState, setNotice, busy
       ) : (
         <section className="editor editor-empty">
           <div className="empty-state">
-            <Mark size={56} />
-            <p>Choose a meeting on the left to see its summary, transcript, draft minutes, and agenda.</p>
-            {state.meetings.length > 0 && (
-              <p className="muted">
-                Or search every saved transcript from{" "}
-                <button className="link-button" onClick={() => go.toSearch({})}>
-                  Search
-                </button>
-                .
-              </p>
-            )}
+            <Mark size={180} alt="Town of Oro Valley Seal" />
+            <div className="ov-prose">
+              <p>Choose a meeting on the left to see its summary, transcript, draft minutes, and agenda.</p>
+              {state.meetings.length > 0 && (
+                <p>
+                  Or search every saved transcript from{" "}
+                  <button className="link-button ov-link" onClick={() => go.toSearch({})}>
+                    Search
+                  </button>
+                  .
+                </p>
+              )}
+            </div>
           </div>
         </section>
       )}

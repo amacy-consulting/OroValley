@@ -82,7 +82,7 @@ export function TranscribeDialog({ onClose, onQueued, settings, busy }) {
       <div className="row dialog-filters">
         <label className="inline">
           Last
-          <select value={monthsBack} onChange={(e) => setMonthsBack(Number(e.target.value))} aria-label="Months back">
+          <select className="ov-input" value={monthsBack} onChange={(e) => setMonthsBack(Number(e.target.value))} aria-label="Months back">
             {[3, 6, 12, 24, 36].map((n) => (
               <option key={n} value={n}>
                 {n} months
@@ -92,7 +92,7 @@ export function TranscribeDialog({ onClose, onQueued, settings, busy }) {
         </label>
         <label className="inline">
           Body
-          <select value={body} onChange={(e) => setBody(e.target.value)} aria-label="Body">
+          <select className="ov-input" value={body} onChange={(e) => setBody(e.target.value)} aria-label="Body">
             {BODY_CHOICES.map((b) => (
               <option key={b.key} value={b.key}>
                 {b.label}
@@ -128,8 +128,8 @@ export function TranscribeDialog({ onClose, onQueued, settings, busy }) {
       )}
 
       {list.length > 0 && (
-        <div className="checklist-wrap">
-          <table className="data-table checklist">
+        <div className="checklist-wrap ov-table-wrap">
+          <table className="data-table ov-table compact checklist">
             <thead>
               <tr>
                 <th className="check">
@@ -198,8 +198,10 @@ export function TranscribeDialog({ onClose, onQueued, settings, busy }) {
           )}
         </span>
         <span className="spacer" />
-        <button onClick={onClose}>Cancel</button>
-        <button className="primary" onClick={start} disabled={starting || !jobCount || busy || missingKeys.length > 0}>
+        <button className="link-button" onClick={onClose}>
+          Cancel
+        </button>
+        <button className="ov-btn" onClick={start} disabled={starting || !jobCount || busy || missingKeys.length > 0}>
           {busy ? "Another action is running" : `Start ${jobCount ? `(${jobCount})` : ""}`}
         </button>
       </div>

@@ -30,9 +30,12 @@ export function Settings({ settings, onClose, onSaved }) {
   }
 
   const secret = (label, key, saved, placeholder) => (
-    <label>
-      {label} {saved && <span className="saved">saved</span>}
+    <label className="ov-field">
+      <span className="ov-label">
+        {label} {saved && <span className="saved">saved</span>}
+      </span>
       <input
+        className="ov-input"
         type="password"
         value={form[key]}
         onChange={set(key)}
@@ -67,13 +70,13 @@ export function Settings({ settings, onClose, onSaved }) {
       </p>
 
       <h3>Publishing summaries to the website</h3>
-      <label>
-        GitHub repository
-        <input value={form.githubRepo} onChange={set("githubRepo")} placeholder="owner/repo" />
+      <label className="ov-field">
+        <span className="ov-label">GitHub repository</span>
+        <input className="ov-input" value={form.githubRepo} onChange={set("githubRepo")} placeholder="owner/repo" />
       </label>
-      <label>
-        Branch
-        <input value={form.githubBranch} onChange={set("githubBranch")} />
+      <label className="ov-field">
+        <span className="ov-label">Branch</span>
+        <input className="ov-input" value={form.githubBranch} onChange={set("githubBranch")} />
       </label>
       {secret("GitHub token", "githubToken", settings.hasGithubToken, "github_pat_…")}
       <p className="hint">
@@ -81,16 +84,18 @@ export function Settings({ settings, onClose, onSaved }) {
         provide it.
         {removeButton("githubToken", settings.hasGithubToken, "Remove saved token")}
       </p>
-      <label>
-        Widget web address
-        <input value={form.widgetUrl} onChange={set("widgetUrl")} />
+      <label className="ov-field">
+        <span className="ov-label">Widget web address</span>
+        <input className="ov-input" value={form.widgetUrl} onChange={set("widgetUrl")} />
       </label>
       <p className="hint">The Town's keys are encrypted for your Windows account and stay on this computer.</p>
 
       {error && <p className="error">{error}</p>}
       <div className="modal-actions">
-        <button onClick={onClose}>Cancel</button>
-        <button className="primary" onClick={save}>
+        <button className="link-button" onClick={onClose}>
+          Cancel
+        </button>
+        <button className="ov-btn" onClick={save}>
           Save
         </button>
       </div>

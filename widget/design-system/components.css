@@ -1,0 +1,1330 @@
+
+/* Oro Valley Design System: component styles. Load after tokens.css.
+   Values are taken from orovalleyaz.gov (read 2026-10-31); `focus-ring` is this system's addition.
+   Glyph shapes are masks, so they take the text color. */
+:root {
+  --ov-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Cpath d='M2 2l6 6-6 6' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --ov-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 23'%3E%3Cpath d='M2 11.5h22M15 3l9 8.5-9 8.5' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--surface);
+}
+
+/* Focus: one ring for every control */
+.ov-btn:focus-visible,
+.ov-link:focus-visible,
+.ov-prose a:focus-visible,
+.ov-search-input:focus-visible,
+.ov-search-button:focus-visible,
+.ov-input:focus-visible,
+.ov-finder-input:focus-visible,
+.ov-finder-mylocation:focus-visible,
+.ov-finder-submit:focus-visible,
+.ov-nav-link:focus-visible,
+.ov-header-logo:focus-visible,
+.ov-crumbs a:focus-visible,
+.ov-tab:focus-visible,
+.ov-quicklinks a:focus-visible,
+.ov-pager a:focus-visible,
+.ov-az-letter:focus-visible,
+.ov-top:focus-visible,
+.ov-feature:focus-visible,
+.ov-accordion-trigger:focus-visible,
+.ov-alert-dismiss:focus-visible,
+.ov-footer a:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--focus-ring);
+}
+
+/* Prose: page content as the Town's content pages set it ------------------ */
+.ov-prose {
+  color: var(--ink);
+}
+
+.ov-prose h1,
+.ov-prose h2,
+.ov-prose h3,
+.ov-prose h4,
+.ov-prose h5,
+.ov-prose h6 {
+  margin: 0 0 var(--space-10);
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.ov-prose h1 { margin-bottom: var(--space-20); font-size: 32px; line-height: 48px; }
+.ov-prose h2 { margin-bottom: var(--space-20); font-size: 28px; line-height: 42px; }
+.ov-prose h3 { font-size: 24px; line-height: 36px; }
+.ov-prose h4 { font-size: 20px; line-height: 30px; font-weight: 600; }
+.ov-prose h5 { font-size: 18.4px; line-height: 27.6px; font-weight: 400; text-transform: uppercase; }
+.ov-prose h6 { font-size: 16px; line-height: 24px; font-weight: 400; text-transform: uppercase; }
+
+.ov-prose p {
+  margin: 0 0 var(--space-20);
+}
+
+.ov-prose p + h1,
+.ov-prose p + h2,
+.ov-prose p + h3,
+.ov-prose p + h4,
+.ov-prose p + h5,
+.ov-prose p + h6 {
+  margin-top: var(--space-20);
+}
+
+.ov-prose ul,
+.ov-prose ol {
+  margin: var(--space-10) 0 var(--space-10) var(--space-10);
+  padding: 0 0 0 var(--space-20);
+}
+
+.ov-prose a,
+.ov-link {
+  color: var(--charcoal);
+  text-decoration: underline;
+  transition: background-color 300ms ease-out;
+}
+
+.ov-prose a:visited,
+.ov-link:visited {
+  color: var(--visited);
+}
+
+.ov-prose a:hover,
+.ov-prose a:focus-visible,
+.ov-link:hover,
+.ov-link:focus-visible {
+  color: var(--blue-hover);
+  text-decoration: none;
+}
+
+.ov-small {
+  font-size: 0.8em;
+}
+
+/* Button ------------------------------------------------------------------ */
+.ov-btn {
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  margin: var(--space-10) 0;
+  padding: var(--space-15) var(--space-20);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--charcoal);
+  background-color: var(--gold);
+  border: 0;
+  border-radius: var(--radius-button);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 300ms ease-out;
+}
+
+.ov-btn:hover,
+.ov-btn:focus-visible {
+  text-decoration: underline;
+}
+
+.ov-btn-cta,
+.ov-btn-doc {
+  padding-right: 40px;
+}
+
+.ov-btn-cta::after,
+.ov-btn-doc::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  width: 10px;
+  height: 16px;
+  transform: translateY(-50%);
+  background-color: currentColor;
+  -webkit-mask: var(--ov-chevron) no-repeat center / 10px 16px;
+  mask: var(--ov-chevron) no-repeat center / 10px 16px;
+  transition: right 200ms ease-out;
+}
+
+.ov-btn-cta:hover::after,
+.ov-btn-cta:focus-visible::after {
+  right: 10px;
+}
+
+.ov-btn-doc {
+  display: block;
+  margin: 0 0 var(--space-5);
+  text-align: left;
+}
+
+.ov-btn-panel {
+  display: block;
+  width: fit-content;
+  margin: var(--space-20) auto var(--space-25);
+  padding: 14px var(--space-20);
+  font-size: 16px;
+  line-height: 24px;
+  border-radius: var(--radius-card);
+}
+
+.ov-btn-danger {
+  color: var(--on-fill);
+  background-color: var(--error);
+}
+
+/* Back to top ------------------------------------------------------------- */
+.ov-top {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 45px;
+  height: 46px;
+  color: var(--blue);
+  background: var(--surface);
+  border: var(--border-rule) solid var(--blue);
+  text-decoration: none;
+  transition: 0.5s;
+}
+
+.ov-top svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.ov-top:hover,
+.ov-top:focus-visible {
+  border-color: var(--surface);
+}
+
+.ov-top-fixed {
+  position: fixed;
+  right: 0;
+  bottom: 30px;
+  z-index: 1000;
+}
+
+/* Search field ------------------------------------------------------------ */
+.ov-search {
+  display: flex;
+  max-width: 550px;
+  margin: 0;
+  border-radius: 9px;
+}
+
+.ov-search-input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 50px;
+  margin: 0;
+  padding: var(--space-5) var(--space-5) var(--space-5) var(--space-20);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 0;
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
+}
+
+.ov-search-input::placeholder {
+  color: var(--ink-soft);
+  opacity: 1;
+}
+
+.ov-search-button {
+  flex: none;
+  min-width: 120px;
+  height: 50px;
+  margin: 0;
+  padding: 2px var(--space-15);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--on-fill);
+  background: var(--blue-bright);
+  border: 0;
+  border-radius: 0 var(--radius-card) var(--radius-card) 0;
+  cursor: pointer;
+}
+
+.ov-search-button:hover,
+.ov-search-button:focus-visible {
+  text-decoration: underline;
+}
+
+.ov-search-input:focus-visible,
+.ov-search-button:focus-visible {
+  position: relative;
+  z-index: 1;
+}
+
+/* Form field -------------------------------------------------------------- */
+.ov-field {
+  margin: 0 0 var(--space-20);
+}
+
+.ov-label {
+  display: inline-block;
+  margin: 0 0 var(--space-10);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.ov-required {
+  display: inline-block;
+  margin-left: var(--space-5);
+  padding: var(--space-5);
+  font-size: 0.75em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background-color: var(--required);
+  vertical-align: top;
+}
+
+.ov-input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: var(--space-12);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--ink);
+  background: var(--surface);
+  border: var(--border-hairline) solid var(--field-border);
+  border-radius: 0;
+}
+
+.ov-errors {
+  margin: 0 0 var(--space-20);
+  padding: 0;
+  color: var(--error);
+  list-style: none;
+}
+
+.ov-errors a {
+  font-weight: 700;
+  color: var(--error);
+}
+
+/* Address finder ---------------------------------------------------------- */
+.ov-finder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-20);
+}
+
+.ov-finder-title {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 32px;
+  line-height: 48px;
+  font-weight: 700;
+  color: var(--on-fill);
+  text-shadow: 2px 3px 3px #000000cc;
+}
+
+.ov-finder-location {
+  position: relative;
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.ov-finder-input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 50px;
+  margin: 0;
+  padding: var(--space-15) 130px var(--space-15) var(--space-20);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 0;
+  border-radius: var(--radius-card);
+}
+
+.ov-finder-input::placeholder {
+  color: var(--ink-soft);
+  opacity: 1;
+}
+
+.ov-finder-mylocation {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  height: 30px;
+  margin: 0;
+  padding: 2px var(--space-15);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 26px;
+  color: var(--blue);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ov-finder-submit {
+  flex: 0 0 220px;
+  height: 50px;
+  margin: 0;
+  padding: 2px var(--space-15);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--charcoal);
+  background: var(--amber);
+  border: 0;
+  border-radius: var(--radius-card);
+  cursor: pointer;
+}
+
+.ov-finder-submit:hover,
+.ov-finder-submit:focus-visible {
+  text-decoration: underline;
+}
+
+/* Site header ------------------------------------------------------------- */
+/* The band is a gradient, so the wordmark can hang below it over the hero. */
+.ov-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0 var(--space-20);
+  padding: 0 var(--space-20);
+  background: linear-gradient(var(--surface-header) 0, var(--surface-header) 50px, transparent 50px);
+}
+
+.ov-header-name {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+  font-size: 24px;
+  line-height: 36px;
+  font-weight: 700;
+  color: var(--charcoal);
+  text-decoration: none;
+}
+
+/* Wordmark lockups in sprite-logo-ov.svg; the consumer sets background-image to its copy */
+.ov-header-logo {
+  display: block;
+  flex: none;
+  position: relative;
+  z-index: 95;
+  width: 191px;
+  height: 100px;
+  background-repeat: no-repeat;
+  background-position: 0 -444px;
+  background-size: 405px 544px;
+}
+
+@media (min-width: 768px) {
+  .ov-header {
+    background: linear-gradient(var(--surface-header) 0, var(--surface-header) 72px, transparent 72px);
+  }
+  .ov-header-name {
+    min-height: 72px;
+  }
+  .ov-header-logo {
+    width: 325px;
+    height: 170px;
+    background-position: 0 -253px;
+  }
+}
+
+@media (min-width: 992px) {
+  .ov-header {
+    background: linear-gradient(var(--surface-header) 0, var(--surface-header) 80px, transparent 80px);
+  }
+  .ov-header-name {
+    min-height: 80px;
+  }
+  .ov-header-logo {
+    width: 405px;
+    height: 232px;
+    background-position: 0 0;
+  }
+}
+
+.ov-nav {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ov-nav-link {
+  display: block;
+  padding: 26px var(--space-20) 1px;
+  font-size: 19.2px;
+  line-height: 28.8px;
+  font-weight: 600;
+  color: var(--charcoal);
+  text-decoration: underline;
+}
+
+.ov-nav-link:hover,
+.ov-nav-link:focus-visible,
+.ov-nav-link[aria-current] {
+  font-weight: 900;
+}
+
+/* Breadcrumbs ------------------------------------------------------------- */
+.ov-crumbs {
+  padding: var(--space-20) 0 0;
+  font-size: 18px;
+  line-height: 27px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.ov-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ov-crumbs li + li::before {
+  content: "/";
+  margin: 0 7px;
+}
+
+.ov-crumbs a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.ov-crumbs a:hover,
+.ov-crumbs a:focus-visible {
+  text-decoration: underline;
+}
+
+/* Tabs -------------------------------------------------------------------- */
+.ov-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.ov-tab {
+  display: block;
+  margin: 0;
+  padding: var(--space-20) var(--space-45);
+  font-family: var(--font-sans);
+  font-size: 17.6px;
+  font-weight: 600;
+  line-height: 26.4px;
+  color: var(--on-fill);
+  background: var(--umber);
+  border: 0;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ov-tab:hover,
+.ov-tab:focus-visible {
+  color: var(--charcoal);
+  background: var(--gold);
+  text-decoration: underline;
+}
+
+.ov-tab[aria-selected="true"] {
+  padding-top: 25px;
+  color: var(--charcoal);
+  background: var(--surface);
+}
+
+.ov-tabs-panel {
+  padding: var(--space-20);
+  background: var(--surface);
+}
+
+.ov-tabs-page {
+  gap: 0 10px;
+}
+
+.ov-tabs-page .ov-tab {
+  padding: 25px 30px;
+  color: var(--ink);
+  background: var(--surface);
+  border: var(--border-hairline) solid var(--blue);
+  border-bottom: 0;
+  border-radius: var(--radius-button) var(--radius-button) 0 0;
+}
+
+.ov-tabs-page .ov-tab:hover,
+.ov-tabs-page .ov-tab:focus-visible {
+  color: var(--on-fill);
+  background: var(--blue);
+}
+
+.ov-tabs-page .ov-tab[aria-selected="true"] {
+  padding-top: 25px;
+  font-weight: 700;
+  color: var(--on-fill);
+  background: var(--blue);
+  border-color: var(--blue-deep);
+}
+
+.ov-tabs-page + .ov-tabs-panel {
+  border: var(--border-hairline) solid var(--blue);
+}
+
+/* Quick links ------------------------------------------------------------- */
+.ov-quicklinks {
+  background: var(--surface-muted);
+}
+
+.ov-quicklinks-title {
+  margin: 0;
+  padding: var(--space-15) 48px var(--space-15) var(--space-24);
+  font-size: 24px;
+  line-height: 36px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.ov-quicklinks ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ov-quicklinks a {
+  position: relative;
+  display: block;
+  padding: var(--space-12) 48px var(--space-12) var(--space-24);
+  font-size: 18px;
+  line-height: 27px;
+  color: var(--ink-soft);
+  background: var(--surface-muted);
+  text-decoration: none;
+}
+
+.ov-quicklinks a::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  width: 10px;
+  height: 16px;
+  transform: translateY(-50%);
+  background-color: currentColor;
+  -webkit-mask: var(--ov-chevron) no-repeat center / 10px 16px;
+  mask: var(--ov-chevron) no-repeat center / 10px 16px;
+}
+
+.ov-quicklinks a:hover,
+.ov-quicklinks a:focus-visible {
+  color: var(--on-fill);
+  background: var(--blue);
+}
+
+/* Pagination -------------------------------------------------------------- */
+.ov-pager {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ov-pager a,
+.ov-pager span {
+  display: block;
+  margin: 0 5px 0 0;
+  padding: 0 7px 4px;
+  font-weight: 700;
+  line-height: 24px;
+  color: var(--charcoal);
+  text-decoration: none;
+  border-bottom: var(--border-hairline) solid var(--navy);
+}
+
+.ov-pager a:hover,
+.ov-pager a:focus-visible {
+  padding-bottom: 0;
+  border-bottom-width: var(--border-letter);
+}
+
+.ov-pager [aria-current] {
+  border-bottom-color: var(--blue);
+}
+
+.ov-pager .ov-pager-gap {
+  border-bottom-color: var(--surface-muted);
+}
+
+/* A–Z index --------------------------------------------------------------- */
+.ov-az {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ov-az-letter {
+  display: block;
+  width: 35px;
+  height: 35px;
+  margin: 0 var(--space-10) var(--space-15) 0;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 35px;
+  text-align: center;
+  text-decoration: none;
+  color: var(--ink-disabled);
+  background-color: var(--surface-muted);
+}
+
+a.ov-az-letter {
+  color: var(--on-fill);
+  background-color: var(--blue);
+  border-bottom: var(--border-letter) solid var(--blue);
+}
+
+a.ov-az-letter:hover,
+a.ov-az-letter:focus-visible {
+  color: var(--blue);
+  background-color: var(--surface-muted);
+  border-bottom-color: var(--navy);
+}
+
+/* Service tile ------------------------------------------------------------ */
+.ov-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-30) 8%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ov-tile {
+  display: block;
+  padding: var(--space-10) 0;
+  text-align: center;
+  text-decoration: none;
+  color: var(--on-fill);
+  background-color: var(--blue-bright);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-tile);
+}
+
+.ov-tile-icon {
+  display: block;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto var(--space-20);
+  color: var(--on-fill);
+}
+
+/* Glyphs from sprite-dio-ov.svg; the consumer sets background-image and the glyph's position */
+.ov-tile-icon-sprite {
+  background-repeat: no-repeat;
+  background-size: 85px 1500px;
+}
+
+.ov-tile-label {
+  display: block;
+  margin: 0;
+  font-size: 18px;
+  line-height: 25.2px;
+  font-weight: 600;
+  color: var(--on-fill);
+}
+
+.ov-tile:hover .ov-tile-label,
+.ov-tile:focus-visible .ov-tile-label {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.ov-tile:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--focus-ring), var(--shadow-tile);
+}
+
+/* Featured card ----------------------------------------------------------- */
+.ov-feature {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  padding: 0 0 70px;
+  color: var(--charcoal);
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  text-decoration: none;
+}
+
+.ov-feature-media {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 480 / 285;
+  object-fit: cover;
+  background: var(--surface-band);
+}
+
+.ov-feature-title {
+  margin: 0;
+  padding: var(--space-20) var(--space-20) 0;
+  font-size: 18px;
+  line-height: 27px;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.ov-feature-text {
+  margin: 0;
+  padding: var(--space-20);
+  color: var(--charcoal);
+}
+
+.ov-feature::before,
+.ov-feature::after {
+  content: "";
+  position: absolute;
+}
+
+.ov-feature::before {
+  left: 20px;
+  bottom: 20px;
+  width: 50px;
+  height: 50px;
+  background-color: var(--blue);
+  border-radius: 25px;
+  transition: width 300ms ease-out, background-color 300ms ease-out;
+}
+
+.ov-feature::after {
+  left: 31px;
+  bottom: 33px;
+  width: 28px;
+  height: 23px;
+  background-color: var(--on-fill);
+  -webkit-mask: var(--ov-arrow) no-repeat center / 28px 23px;
+  mask: var(--ov-arrow) no-repeat center / 28px 23px;
+  transition: left 300ms ease-out;
+}
+
+.ov-feature:hover::before,
+.ov-feature:focus-visible::before {
+  width: 100px;
+  background-color: var(--surface);
+}
+
+.ov-feature:hover::after,
+.ov-feature:focus-visible::after {
+  left: 81px;
+  background-color: var(--blue);
+}
+
+.ov-feature:hover .ov-feature-title,
+.ov-feature:focus-visible .ov-feature-title {
+  text-decoration: underline;
+}
+
+/* Listing card and event date --------------------------------------------- */
+.ov-listing {
+  display: block;
+  overflow: hidden;
+  margin: 0 0 var(--space-30);
+  color: var(--charcoal);
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  text-decoration: none;
+}
+
+.ov-listing-media {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 380 / 180;
+  object-fit: cover;
+  background: var(--surface-band);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
+.ov-listing-title {
+  margin: 0 0 var(--space-20);
+  padding: var(--space-20) var(--space-20) 0;
+  font-size: 18px;
+  line-height: 27px;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.ov-listing-meta,
+.ov-listing-text {
+  margin: 0;
+  padding: 0 var(--space-20) var(--space-20);
+  color: var(--charcoal);
+}
+
+.ov-listing:hover .ov-listing-title,
+.ov-listing:focus-visible .ov-listing-title {
+  text-decoration: underline;
+}
+
+.ov-listing:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--focus-ring), var(--shadow-card);
+}
+
+.ov-listing .ov-date {
+  float: left;
+  margin: var(--space-20) var(--space-20) var(--space-10) var(--space-20);
+}
+
+.ov-date {
+  display: block;
+  box-sizing: border-box;
+  width: 75px;
+  padding: var(--space-10) 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 21.6px;
+  text-align: center;
+  color: var(--charcoal);
+  background: var(--surface-band);
+  border-radius: var(--radius-card);
+}
+
+.ov-date-day {
+  display: block;
+  line-height: 1;
+}
+
+.ov-date-month {
+  display: inline-block;
+  margin: var(--space-5) 0;
+}
+
+/* Accordion --------------------------------------------------------------- */
+.ov-accordion {
+  display: grid;
+  gap: 2px;
+}
+
+.ov-accordion-trigger {
+  position: relative;
+  display: block;
+  padding: var(--space-15) 50px var(--space-15) var(--space-25);
+  font-size: 18px;
+  line-height: 27px;
+  font-weight: 700;
+  color: var(--on-fill);
+  background-color: var(--blue);
+  list-style: none;
+  cursor: pointer;
+}
+
+.ov-accordion-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.ov-accordion-trigger::before,
+.ov-accordion-trigger::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 19px;
+  width: 16px;
+  height: 3px;
+  margin-top: -1.5px;
+  background-color: currentColor;
+}
+
+.ov-accordion-trigger::after {
+  transform: rotate(90deg);
+}
+
+details[open] > .ov-accordion-trigger::after {
+  display: none;
+}
+
+.ov-accordion-trigger:hover,
+.ov-accordion-trigger:focus-visible {
+  color: var(--ink-on-sky);
+  background-color: var(--sky);
+}
+
+.ov-accordion-body {
+  padding: var(--space-20) var(--space-25);
+  background-color: var(--surface-muted);
+}
+
+.ov-accordion-body > p:first-child {
+  margin-top: 0;
+}
+
+.ov-accordion-body > p:last-child {
+  margin-bottom: 0;
+}
+
+/* Side box ---------------------------------------------------------------- */
+.ov-sidebox {
+  margin: var(--space-25) 0;
+  background-color: var(--surface-muted);
+}
+
+.ov-sidebox-title {
+  margin: 0;
+  padding: var(--space-15) var(--space-25);
+  font-size: 24px;
+  line-height: 36px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.ov-sidebox-content {
+  margin: 0;
+  padding: var(--space-10) var(--space-25) var(--space-20);
+  color: var(--ink-soft);
+}
+
+.ov-sidebox-content h3 {
+  margin: var(--space-10) 0 var(--space-5);
+  padding-top: 18px;
+  font-size: 21.6px;
+  line-height: 32.4px;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.ov-sidebox-content h3:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.ov-sidebox-content p {
+  margin: 0;
+}
+
+/* Emphasis boxes ---------------------------------------------------------- */
+.ov-emphasis-1 {
+  display: inline-block;
+  padding-left: var(--space-20);
+  font-weight: 600;
+  border-left: var(--border-emphasis-left) solid var(--navy);
+}
+
+.ov-emphasis-2 {
+  display: inline-block;
+  padding: var(--space-20);
+  font-weight: 600;
+  background-color: var(--surface-muted);
+  border-bottom: var(--border-emphasis-bottom) solid var(--navy);
+}
+
+/* Step list --------------------------------------------------------------- */
+.ov-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: ov-step;
+}
+
+.ov-step {
+  position: relative;
+  min-height: 84px;
+  margin-left: 34px;
+  padding-left: 50px;
+  color: var(--charcoal);
+  border-left: var(--border-rule) solid var(--line-step);
+  counter-increment: ov-step;
+}
+
+.ov-step:last-child {
+  margin-left: 36px;
+  border-left: 0;
+}
+
+.ov-step::before {
+  content: counter(ov-step);
+  position: absolute;
+  top: 0;
+  left: -31px;
+  box-sizing: border-box;
+  width: 60px;
+  height: 60px;
+  padding-top: 6px;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 45px;
+  text-align: center;
+  color: var(--charcoal);
+  background-color: var(--surface);
+  border: var(--border-hairline) solid var(--blue);
+  border-radius: var(--radius-circle);
+}
+
+.ov-step-title {
+  margin: 0 0 var(--space-10);
+  padding-top: 8px;
+  font-size: 20.8px;
+  line-height: 31.2px;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.ov-step p {
+  margin: 0;
+  padding-bottom: var(--space-20);
+  color: var(--charcoal);
+}
+
+/* Data table -------------------------------------------------------------- */
+.ov-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.ov-table {
+  width: 100%;
+  margin: 0 0 var(--space-20);
+  font-size: 16px;
+  border: 0;
+  border-collapse: collapse;
+}
+
+.ov-table tr {
+  border-bottom: var(--border-rule) solid var(--surface);
+}
+
+.ov-table th,
+.ov-table td {
+  padding: var(--space-24);
+  text-align: left;
+  vertical-align: top;
+  color: var(--ink-table);
+  border-left: var(--border-rule) solid var(--surface);
+}
+
+.ov-table th {
+  font-weight: 600;
+  background-color: var(--surface-table-head);
+}
+
+.ov-table td {
+  font-weight: 400;
+  background-color: var(--surface-table);
+}
+
+/* Alert banner ------------------------------------------------------------ */
+.ov-alert {
+  position: relative;
+  padding: var(--space-15) var(--space-25) var(--space-20);
+  color: var(--on-fill);
+  background-color: var(--alert-neutral);
+}
+
+.ov-alert-title {
+  margin: 0 0 var(--space-5);
+  font-size: 24px;
+  line-height: 36px;
+  font-weight: 700;
+  color: inherit;
+}
+
+.ov-alert p {
+  margin: 0;
+  color: inherit;
+}
+
+.ov-alert a {
+  color: inherit;
+}
+
+.ov-alert-dismiss {
+  margin: var(--space-20) 0 0;
+  padding: 6px 8px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--charcoal);
+  background-color: var(--surface);
+  border: 0;
+  border-radius: var(--radius-card);
+  cursor: pointer;
+}
+
+.ov-alert-dismiss:hover,
+.ov-alert-dismiss:focus-visible {
+  text-decoration: underline;
+}
+
+.ov-alert-10 {
+  color: var(--charcoal);
+  background-color: var(--gold);
+}
+
+.ov-alert-10 .ov-alert-dismiss,
+.ov-alert-30 .ov-alert-dismiss {
+  color: var(--on-fill);
+  background-color: var(--charcoal);
+}
+
+.ov-alert-20 {
+  color: var(--ink-on-sky);
+  background-color: var(--sky);
+}
+
+.ov-alert-20 .ov-alert-dismiss {
+  color: var(--ink-on-sky);
+  background-color: var(--surface);
+}
+
+.ov-alert-30 {
+  color: var(--ink);
+  background-color: var(--alert-low);
+}
+
+/* Canceled ---------------------------------------------------------------- */
+.ov-canceled {
+  display: inline-block;
+  padding: 7px var(--space-10);
+  font-size: 0.6em;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--on-fill);
+  background-color: var(--canceled);
+  border-radius: var(--radius-tag);
+  vertical-align: middle;
+}
+
+.ov-canceled-notice {
+  margin: var(--space-25) 0;
+  padding: var(--space-20);
+  background-color: var(--surface);
+  border: var(--border-hairline) solid var(--canceled);
+}
+
+.ov-canceled-notice p {
+  margin: 0;
+  color: var(--canceled);
+}
+
+/* Footer ------------------------------------------------------------------ */
+.ov-footer {
+  color: var(--charcoal);
+}
+
+.ov-footer-main {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-40) var(--space-20);
+  padding: var(--space-60) var(--space-10) var(--space-80);
+  background-color: var(--surface-footer);
+}
+
+.ov-footer-seal {
+  display: block;
+  width: 180px;
+  max-width: 100%;
+  height: auto;
+}
+
+.ov-footer-title {
+  margin: 0 0 var(--space-20);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+.ov-footer p {
+  margin: 0 0 var(--space-20);
+  line-height: 1.5;
+  color: var(--charcoal);
+}
+
+.ov-footer a {
+  color: var(--charcoal);
+  text-decoration: underline;
+}
+
+.ov-footer-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ov-footer-links a {
+  line-height: 2.25;
+  text-decoration: none;
+}
+
+.ov-footer-links a:hover,
+.ov-footer-links a:focus-visible {
+  text-decoration: underline;
+}
+
+.ov-footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-10) var(--space-20);
+  padding: var(--space-15) var(--space-10);
+  font-size: 12px;
+  line-height: 18px;
+  border-top: var(--border-footer) solid var(--blue);
+}
+
+.ov-footer-bottom a {
+  text-decoration: none;
+}
+
+.ov-footer-bottom a:hover,
+.ov-footer-bottom a:focus-visible {
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ov-btn,
+  .ov-btn-cta::after,
+  .ov-btn-doc::after,
+  .ov-link,
+  .ov-prose a,
+  .ov-top,
+  .ov-feature::before,
+  .ov-feature::after {
+    transition: none;
+  }
+}
