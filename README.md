@@ -27,7 +27,7 @@ Swagit video + Destiny agenda ──► Dashboard app (staff PC)
 
 Two ways to run the dashboard on a staff PC:
 
-- **Installer (recommended for staff).** Run `review-app\release\Oro Valley Council Dashboard Setup.exe`. It installs for the current Windows account only (no admin rights), adds a Start menu and desktop shortcut, and bundles everything including ffmpeg. Build it with `npm run dist` (see Develop) and hand the .exe to staff; it contains no keys.
+- **Installer (recommended for staff).** Download **Oro Valley Council Dashboard Setup.exe** from the latest release at https://github.com/amacy-consulting/OroValley/releases/latest and run it. It installs for the current Windows account only (no admin rights), adds a Start menu and desktop shortcut, and bundles everything including ffmpeg. It contains no keys. **Updates are automatic:** the installed app checks the Releases page a few seconds after it starts and every six hours, downloads a newer version in the background, shows a banner when it is ready, and installs it the next time the app starts (or at once with **Restart and update now**). The footer shows the installed version and a **Check for updates** link.
 - **Start script (from source).** Double-click **`Start Oro Valley Council Dashboard.cmd`** at the top of this folder. It needs Node.js installed; the first run downloads dependencies and Electron (a few minutes), later runs start in seconds.
 
 Either way, open **Settings** on first launch and paste the two keys described below.
@@ -89,7 +89,7 @@ node node_modules\electron\install.js    # if npm held back Electron's download 
 npm test                                 # offline tests: sources + review state (fixtures), minutes engine, search/topics/ask engine; no keys
 node search-test.js                      # the search engine test alone, with timing over 100 generated transcripts
 npm start                                # builds the screens and opens the app
-npm run dist                             # builds release\Oro Valley Council Dashboard Setup.exe
+npm run dist                             # builds release\Oro Valley Council Dashboard Setup.exe (plus latest.yml and the .blockmap the updater needs)
 
 # End to end on the newest council meeting, through the same code path as the app:
 $env:DEEPGRAM_API_KEY = "..."; $env:E2E_STAGE = "transcript"; npm run e2e     # transcript only
@@ -111,6 +111,19 @@ Optional environment overrides:
 | `OV_CHUNK_AFTER_SEC` | Recordings longer than this are transcribed in one-hour parts (default 4 hours). Deepgram timeouts also fall back to parts. |
 | `OV_AUDIO_BITRATE` | MP3 bitrate for the Deepgram upload (default `64k`) |
 | `FFMPEG_BIN` | Use a different ffmpeg.exe |
+
+
+### Releasing a new version
+
+1. Raise `version` in `review-app/package.json` (the updater only installs a higher version), commit, and push.
+2. `npm run dist` in `review-app`.
+3. Create a GitHub release tagged `v<version>` and attach the three files from `review-app\release\`: `Oro Valley Council Dashboard Setup.exe`, `Oro Valley Council Dashboard Setup.exe.blockmap`, and `latest.yml`. For example:
+
+   ```powershell
+   gh release create v1.2.0 "release\Oro Valley Council Dashboard Setup.exe" "release\Oro Valley Council Dashboard Setup.exe.blockmap" release\latest.yml --title "v1.2.0" --notes "What changed"
+   ```
+
+4. Installed copies pick it up on their next start. Nothing else to do.
 
 ## Third-party components
 
