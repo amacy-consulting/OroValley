@@ -923,8 +923,27 @@ ipcMain.handle("update:install", () => {
 // Dev helper: OV_USER_DATA=<folder> keeps test runs away from the real review state and keys.
 if (process.env.OV_USER_DATA) app.setPath("userData", process.env.OV_USER_DATA);
 
+/** A seeded installer carries the Town's keys in main/seed.json (written at build time, never in
+ *  git). On first launch they are stored encrypted in Settings and used from there; a PC that already
+ *  has a key keeps it, so later keyless updates and the reviewer's own changes win. */
+function seedKeysIfMissing() {
+  const file = path.join(__dirname, "seed.json");
+  if (!fs.existsSync(file)) return;
+  try {
+    const seed = JSON.parse(fs.readFileSync(file, "utf-8"));
+    const current = loadSettings();
+    const update = {};
+    if (seed.anthropicApiKey && !current.anthropicApiKey) update.anthropicApiKey = seed.anthropicApiKey;
+    if (seed.deepgramApiKey && !current.deepgramApiKey) update.deepgramApiKey = seed.deepgramApiKey;
+    if (Object.keys(update).length) saveSettings(update);
+  } catch (e) {
+    console.error("Seeded keys could not be applied:", e.message);
+  }
+}
+
 app.whenReady().then(() => {
   const userData = app.getPath("userData");
+  seedKeysIfMissing();
   store = new ReviewStore(userData);
   corpus = new Corpus({ transcriptsDir: transcriptsDir(), minutesDir: minutesDir() });
   topics = new TopicStore(userData);

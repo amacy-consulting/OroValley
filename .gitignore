@@ -9,3 +9,6 @@ city-council-widget-main/
 
 # Old widget preview data; not used by the app
 samples/
+
+# Keys for a seeded installer; written by npm run dist:seeded, never committed
+review-app/main/seed.json

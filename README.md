@@ -113,6 +113,20 @@ Optional environment overrides:
 | `FFMPEG_BIN` | Use a different ffmpeg.exe |
 
 
+### Handing staff the keys: a seeded installer
+
+Staff normally paste the two keys into Settings themselves. To spare them that, build a **seeded installer** that carries the Town's keys and stores them, encrypted, on each PC the first time the app opens:
+
+```powershell
+cd review-app
+$env:ANTHROPIC_API_KEY = "sk-ant-..."; $env:DEEPGRAM_API_KEY = "..."
+npm run dist:seeded                      # same installer, plus the keys; the seed file is removed afterwards
+```
+
+- Share that installer **privately** (shared drive, email to staff), never on the public Releases page: anyone who has the file can read the keys out of it. Use keys from dedicated workspaces with spend limits so a leak is cheap to revoke.
+- A PC that already has a key keeps it; the seed only fills empty slots. Later automatic updates from the (keyless) public release leave the stored keys alone.
+- To rotate keys, build a new seeded installer or have staff paste the new key in Settings.
+- `npm run dist` always clears any seed first, so the public installer never carries keys. `main/seed.json` is git-ignored.
 ### Releasing a new version
 
 1. Raise `version` in `review-app/package.json` (the updater only installs a higher version), commit, and push.

@@ -10,9 +10,10 @@
   "scripts": {
     "build:renderer": "vite build",
     "start": "vite build && electron .",
-    "dist": "vite build && electron-builder --win --publish never",
+    "dist": "node scripts/write-seed.js --clear && vite build && electron-builder --win --publish never",
     "test": "node smoke-test.js && node minutes-test.js && node search-test.js",
-    "e2e": "node e2e-test.js"
+    "e2e": "node e2e-test.js",
+    "dist:seeded": "node scripts/write-seed.js && vite build && electron-builder --win --publish never && node scripts/write-seed.js --clear"
   },
   "build": {
     "appId": "gov.orovalleyaz.council-dashboard",
