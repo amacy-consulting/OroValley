@@ -83,4 +83,16 @@ contextBridge.exposeInMainWorld("review", {
     ipcRenderer.on("jobs", listener);
     return () => ipcRenderer.removeListener("jobs", listener);
   },
+
+  // Automatic updates from the repository's Releases (installed app only)
+  /** -> { ok, status: { state, version?, percent?, error? }, version, enabled } */
+  updateStatus: () => ipcRenderer.invoke("update:status"),
+  checkForUpdates: () => ipcRenderer.invoke("update:check"),
+  installUpdate: () => ipcRenderer.invoke("update:install"),
+  /** Called with the update status whenever it changes. */
+  onUpdate: (callback) => {
+    const listener = (_e, status) => callback(status);
+    ipcRenderer.on("update", listener);
+    return () => ipcRenderer.removeListener("update", listener);
+  },
 });

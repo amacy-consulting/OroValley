@@ -1,7 +1,7 @@
 {
   "name": "oro-valley-council-dashboard",
   "productName": "Oro Valley Council Dashboard",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Town of Oro Valley council meeting dashboard: Swagit video, Deepgram transcripts, AI summaries and draft minutes, with search, topics and Ask for Town staff. Nothing is published.",
   "main": "main/main.js",
   "author": "Town of Oro Valley",
@@ -10,7 +10,7 @@
   "scripts": {
     "build:renderer": "vite build",
     "start": "vite build && electron .",
-    "dist": "vite build && electron-builder --win",
+    "dist": "vite build && electron-builder --win --publish never",
     "test": "node smoke-test.js && node minutes-test.js && node search-test.js",
     "e2e": "node e2e-test.js"
   },
@@ -43,12 +43,18 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "artifactName": "Oro Valley Council Dashboard Setup.exe"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "amacy-consulting",
+      "repo": "OroValley"
     }
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.132.1",
     "@fontsource/source-sans-3": "^5.3.1",
     "docx": "^9.5.0",
+    "electron-updater": "^6.8.11",
     "ffmpeg-static": "^5.3.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"

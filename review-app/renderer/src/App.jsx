@@ -26,6 +26,8 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
   const [notice, setNotice] = useState(null);
+  const [update, setUpdate] = useState(null); // { state, version, percent, error } from the auto-updater
+  const [appVersion, setAppVersion] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [setupDismissed, setSetupDismissed] = useState(false);
   const [showTranscribe, setShowTranscribe] = useState(false);
@@ -49,6 +51,8 @@ export default function App() {
       }
     });
     const offProgress = api.onProgress(setProgress);
+    const offUpdate = api.onUpdate ? api.onUpdate(setUpdate) : () => {};
+    if (api.updateStatus) api.updateStatus().then((r) => r && r.ok && setAppVersion(r.version));
     const offJobs = api.onJobs((status) => {
       setJobs(status || NO_JOBS);
       // A finished job may have saved a transcript, summary or minutes draft: pick it up.
@@ -60,6 +64,7 @@ export default function App() {
     });
     return () => {
       offProgress();
+      offUpdate();
       offJobs();
     };
   }, []);
@@ -208,6 +213,20 @@ export default function App() {
           </button>
         </div>
       )}
+      {update && update.state === "ready" && (
+        <div className="banner banner-ok ov-alert ov-alert-30" role="status">
+          <BannerIcon kind="ok" />
+          <p className="banner-text">
+            Version {update.version} is downloaded and installs the next time the app starts.{" "}
+            <button className="link-button" onClick={() => api.installUpdate()}>
+              Restart and update now
+            </button>
+          </p>
+          <button className="ov-alert-dismiss" onClick={() => setUpdate(null)}>
+            Later
+          </button>
+        </div>
+      )}
       {notice && (
         <div
           className={`banner banner-${notice.kind} ov-alert${notice.kind === "ok" ? " ov-alert-30" : ""}`}
@@ -275,7 +294,25 @@ export default function App() {
       <footer className="app-footer ov-footer">
         <div className="ov-footer-bottom">
           <Mark size={40} footer />
-          <span>Town of Oro Valley · 11000 N. La Cañada Drive · 520-229-4700 · Staff tool; summaries and drafts are not official records</span>
+          <span>
+            Town of Oro Valley · 11000 N. La Cañada Drive · 520-229-4700 · Staff tool; summaries and drafts are not official records
+            {appVersion ? ` · Version ${appVersion}` : ""}
+            {update && update.state === "downloading" ? ` · Downloading update${update.percent ? ` ${update.percent}%` : ""}…` : ""}
+            {appVersion && (
+              <>
+                {" · "}
+                <button
+                  className="link-button"
+                  onClick={async () => {
+                    const r = await api.checkForUpdates();
+                    setNotice(r.ok ? { kind: "ok", text: "Checking for updates. You will see a banner here if one is ready." } : { kind: "error", text: r.error });
+                  }}
+                >
+                  Check for updates
+                </button>
+              </>
+            )}
+          </span>
         </div>
       </footer>
 

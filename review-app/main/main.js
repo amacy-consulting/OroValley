@@ -19,6 +19,7 @@ const searchEngine = require("./engine/search");
 const { TopicStore, topicStats, topicsForMeeting, topicsOverview } = require("./engine/topics");
 const { askQuestion } = require("./engine/ask");
 const { JobQueue } = require("./engine/jobs");
+const { autoUpdater } = require("electron-updater");
 const { loadCouncilRoster } = require("./engine/roster");
 
 let mainWindow = null;
@@ -139,6 +140,36 @@ function createWindow() {
       app.quit();
     });
   }
+}
+
+// ---------- automatic updates (GitHub Releases) ----------
+// The installed app checks the repository's Releases for a newer version, downloads it in the
+// background, tells the screen when it is ready, and installs it on the next restart.
+let updateStatus = { state: "idle" }; // idle | checking | downloading | ready | none | error
+
+function sendUpdate(patch) {
+  updateStatus = { ...updateStatus, ...patch };
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send("update", updateStatus);
+}
+
+function updatesEnabled() {
+  // Only the installed app updates itself; dev runs and screenshot runs (OV_USER_DATA) never do.
+  return app.isPackaged && !process.env.OV_USER_DATA && process.env.OV_NO_UPDATES !== "1";
+}
+
+function setupUpdates() {
+  if (!updatesEnabled()) return;
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.on("checking-for-update", () => sendUpdate({ state: "checking", error: null }));
+  autoUpdater.on("update-available", (info) => sendUpdate({ state: "downloading", version: info.version, percent: 0 }));
+  autoUpdater.on("update-not-available", () => sendUpdate({ state: "none" }));
+  autoUpdater.on("download-progress", (p) => sendUpdate({ state: "downloading", percent: Math.round(p.percent) }));
+  autoUpdater.on("update-downloaded", (info) => sendUpdate({ state: "ready", version: info.version }));
+  autoUpdater.on("error", (e) => sendUpdate({ state: "error", error: String((e && e.message) || e) }));
+  const check = () => autoUpdater.checkForUpdates().catch(() => {});
+  setTimeout(check, 8000); // after the window is up
+  setInterval(check, 6 * 60 * 60 * 1000); // and every six hours while the app stays open
 }
 
 function progress(message) {
@@ -871,6 +902,24 @@ ipcMain.handle("meetings:candidates", (_e, options) => {
   return { ok: true, candidates, rate: DEEPGRAM_PER_MINUTE, assumedMinutes: UNKNOWN_DURATION_MIN };
 });
 
+ipcMain.handle("update:status", () => ({ ok: true, status: updateStatus, version: app.getVersion(), enabled: updatesEnabled() }));
+
+ipcMain.handle("update:check", async () => {
+  if (!updatesEnabled()) return { ok: false, error: "Updates only work in the installed app." };
+  try {
+    await autoUpdater.checkForUpdates();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: `Could not check for updates (${(e && e.message) || e}).` };
+  }
+});
+
+ipcMain.handle("update:install", () => {
+  if (updateStatus.state !== "ready") return { ok: false, error: "No update is ready yet." };
+  setImmediate(() => autoUpdater.quitAndInstall());
+  return { ok: true };
+});
+
 // Dev helper: OV_USER_DATA=<folder> keeps test runs away from the real review state and keys.
 if (process.env.OV_USER_DATA) app.setPath("userData", process.env.OV_USER_DATA);
 
@@ -883,6 +932,7 @@ app.whenReady().then(() => {
   jobs.onChange(onQueueChange);
   cleanupTemp(tempDir());
   createWindow();
+  setupUpdates();
 });
 
 app.on("before-quit", () => {
